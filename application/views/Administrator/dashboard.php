@@ -403,6 +403,20 @@ if ($module == 'dashboard' or $module == '') { ?>
 						</div>
 					</div>
 				<?php endif; ?>
+				<?php if (array_search("exchange", $access) > -1 || isset($CheckSuperAdmin) || isset($CheckAdmin)) : ?>
+					<div class="col-md-2 col-xs-6 custom-padding ">
+						<div class="col-md-12 section20">
+							<a href="<?php echo base_url(); ?>exchange">
+								<div class="logo">
+									<i class="menu-icon fa fa-exchange"></i>
+								</div>
+								<div class="textModule">
+									Sales Exchange
+								</div>
+							</a>
+						</div>
+					</div>
+				<?php endif; ?>
 				<!-- <?php if (array_search("sales/service", $access) > -1 || isset($CheckSuperAdmin) || isset($CheckAdmin)) : ?>
 					<div class="col-md-2 col-xs-6 custom-padding ">
 						<div class="col-md-12 section20">

@@ -390,6 +390,16 @@ if ($module == 'dashboard' or $module == '') {
 				<b class="arrow"></b>
 			</li>
 		<?php endif; ?>
+		
+		<?php if (array_search("exchange", $access) > -1 || isset($CheckSuperAdmin) || isset($CheckAdmin)) : ?>
+			<li class="">
+				<a href="<?php echo base_url(); ?>exchange">
+					<i class="menu-icon fa fa-exchange"></i>
+					<span class="menu-text"> Sales Exchange </span>
+				</a>
+				<b class="arrow"></b>
+			</li>
+		<?php endif; ?>
 
 
 		<!-- <?php if (array_search("sales/service", $access) > -1 || isset($CheckSuperAdmin) || isset($CheckAdmin)) : ?>

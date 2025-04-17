@@ -225,6 +225,8 @@
                     saletotal: 0,
                     exchangeAmount: 0,
                     total: 0,
+                    cashPaid: 0,
+                    bankPaid: 0,
                 },
                 sales: {
                     saleDetails: []
