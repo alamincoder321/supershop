@@ -211,6 +211,12 @@ class Model_Table extends CI_Model
                 " . ($date == null ? "" : " and sm.SaleMaster_SaleDate < '$date'") . "
             ) as received_sales,
             (
+                select ifnull(sum(ex.cashPaid), 0) from tbl_exchange ex
+                where ex.Status = 'a'
+                and ex.branchId = " . $this->session->userdata('BRANCHid') . "
+                " . ($date == null ? "" : " and ex.date < '$date'") . "
+            ) as exchange_sales,
+            (
                 select ifnull(sum(cp.CPayment_amount), 0) from tbl_customer_payment cp
                 where cp.CPayment_TransactionType = 'CR'
                 and cp.CPayment_status = 'a'
@@ -334,7 +340,7 @@ class Model_Table extends CI_Model
             ) as buy_asset,
             /* total */
             (
-                select received_sales + received_customer + received_supplier + received_cash + bank_withdraw + loan_received + loan_initial_balance + invest_received + sale_asset
+                select received_sales + exchange_sales + received_customer + received_supplier + received_cash + bank_withdraw + loan_received + loan_initial_balance + invest_received + sale_asset
             ) as total_in,
             (
                 select paid_purchase + paid_customer + paid_supplier + paid_cash + bank_deposit + employee_payment + loan_payment + invest_payment + buy_asset
@@ -352,6 +358,14 @@ class Model_Table extends CI_Model
         $bankTransactionSummary = $this->db->query("
             select 
                 ba.*,
+                (
+                    select ifnull(sum(ex.bankPaid), 0) from tbl_exchange ex
+                    where ex.bank_id = ba.account_id
+                    and ex.Status = 'a'
+                    and ex.branchId = " . $this->session->userdata('BRANCHid') . "
+                    " . ($date == null ? "" : " and ex.date < '$date'") . "
+                ) as exchange_sales,
+                
                 (
                     select ifnull(sum(bt.amount), 0) from tbl_bank_transactions bt
                     where bt.account_id = ba.account_id
@@ -401,7 +415,7 @@ class Model_Table extends CI_Model
                     " . ($date == null ? "" : " and sp.SPayment_date < '$date'") . "
                 ) as total_received_from_supplier,
                 (
-                    select (ba.initial_balance + total_deposit + total_received_from_customer + total_received_from_supplier) - (total_withdraw + total_paid_to_customer + total_paid_to_supplier)
+                    select (ba.initial_balance + total_deposit + exchange_sales + total_received_from_customer + total_received_from_supplier) - (total_withdraw + total_paid_to_customer + total_paid_to_supplier)
                 ) as balance
             from tbl_bank_accounts ba
             where ba.branch_id = " . $this->session->userdata('BRANCHid') . "

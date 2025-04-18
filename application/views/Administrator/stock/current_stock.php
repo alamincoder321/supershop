@@ -120,14 +120,16 @@
 							<th>Product Id</th>
 							<th>Product Name</th>
 							<th>Category</th>
-							<th>Purchased Quantity</th>
-							<th>Purchase Returned Quantity</th>
-							<th>Damaged Quantity</th>
-							<th>Sold Quantity</th>
-							<th>Sales Returned Quantity</th>
-							<th>Transferred In Quantity</th>
-							<th>Transferred Out Quantity</th>
-							<th>Current Quantity</th>
+							<th>Purchased Qty</th>
+							<th>Pur. ReturnQty</th>
+							<th>Damaged Qty</th>
+							<th>Sold Qty</th>
+							<th>Sale ReturnQty</th>
+							<th>Exc. InQty</th>
+							<th>Exc. OutQty</th>
+							<th>Trans. InQty</th>
+							<th>Trans. OutQty</th>
+							<th>Current Qty</th>
 							<th>Rate</th>
 							<th>Stock Value</th>
 						</tr>
@@ -142,6 +144,8 @@
 							<td>{{ product.damaged_quantity }}</td>
 							<td>{{ product.sold_quantity }}</td>
 							<td>{{ product.sales_returned_quantity }}</td>
+							<td>{{ product.exchange_in_quantity }}</td>
+							<td>{{ product.exchange_out_quantity }}</td>
 							<td>{{ product.transferred_to_quantity}}</td>
 							<td>{{ product.transferred_from_quantity}}</td>
 							<td>{{ product.current_quantity }} {{ product.Unit_Name }}</td>
@@ -151,7 +155,7 @@
 					</tbody>
 					<tfoot>
 						<tr>
-							<th colspan="12" style="text-align:right;">Total Stock Value</th>
+							<th colspan="14" style="text-align:right;">Total Stock Value</th>
 							<th>{{ totalStockValue | decimal }}</th>
 						</tr>
 					</tfoot>

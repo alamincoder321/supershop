@@ -1,44 +1,54 @@
 <style>
-	.v-select{
-		margin-bottom: 5px;
+    .v-select {
+        margin-bottom: 5px;
         float: right;
         min-width: 200px;
         margin-left: 5px;
-	}
-	.v-select .dropdown-toggle{
-		padding: 0px;
-        height: 25px;
-	}
-	.v-select input[type=search], .v-select input[type=search]:focus{
-		margin: 0px;
-	}
-	.v-select .vs__selected-options{
-		overflow: hidden;
-		flex-wrap:nowrap;
-	}
-	.v-select .selected-tag{
-		margin: 2px 0px;
-		white-space: nowrap;
-		position:absolute;
-		left: 0px;
-	}
-	.v-select .vs__actions{
-		margin-top:-5px;
-	}
-	.v-select .dropdown-menu{
-		width: auto;
-		overflow-y:auto;
-	}
-    #priceList label{
-        font-size: 13px;
-		margin-top: 3px;
     }
-    #priceList select{
+
+    .v-select .dropdown-toggle {
+        padding: 0px;
+        height: 25px;
+    }
+
+    .v-select input[type=search],
+    .v-select input[type=search]:focus {
+        margin: 0px;
+    }
+
+    .v-select .vs__selected-options {
+        overflow: hidden;
+        flex-wrap: nowrap;
+    }
+
+    .v-select .selected-tag {
+        margin: 2px 0px;
+        white-space: nowrap;
+        position: absolute;
+        left: 0px;
+    }
+
+    .v-select .vs__actions {
+        margin-top: -5px;
+    }
+
+    .v-select .dropdown-menu {
+        width: auto;
+        overflow-y: auto;
+    }
+
+    #priceList label {
+        font-size: 13px;
+        margin-top: 3px;
+    }
+
+    #priceList select {
         border-radius: 3px;
         padding: 0px;
-		font-size: 13px;
+        font-size: 13px;
     }
-    #priceList .form-group{
+
+    #priceList .form-group {
         margin-right: 10px;
     }
 </style>
@@ -99,16 +109,16 @@
     </div>
 </div>
 
-<script src="<?php echo base_url();?>assets/js/vue/vue.min.js"></script>
-<script src="<?php echo base_url();?>assets/js/vue/axios.min.js"></script>
-<script src="<?php echo base_url();?>assets/js/vue/vue-select.min.js"></script>
-<script src="<?php echo base_url();?>assets/js/moment.min.js"></script>
+<script src="<?php echo base_url(); ?>assets/js/vue/vue.min.js"></script>
+<script src="<?php echo base_url(); ?>assets/js/vue/axios.min.js"></script>
+<script src="<?php echo base_url(); ?>assets/js/vue/vue-select.min.js"></script>
+<script src="<?php echo base_url(); ?>assets/js/moment.min.js"></script>
 
 <script>
     Vue.component('v-select', VueSelect.VueSelect);
     new Vue({
         el: '#priceList',
-        data(){
+        data() {
             return {
                 searchType: '',
                 products: [],
@@ -117,18 +127,18 @@
                 selectedCategory: null
             }
         },
-        created(){
+        created() {
             this.getCategories();
         },
         methods: {
-            getCategories(){
+            getCategories() {
                 axios.get('/get_categories').then(res => {
                     this.categories = res.data;
                 })
             },
-            getProducts(){
+            getProducts() {
                 let categoryId = '';
-                if(this.searchType == 'category' && this.selectedCategory != null){
+                if (this.searchType == 'category' && this.selectedCategory != null) {
                     categoryId = this.selectedCategory.ProductCategory_SlNo;
                 }
 
@@ -139,12 +149,12 @@
                     this.products = res.data;
                 })
             },
-            async print(){
-				let reportContent = `
+            async print() {
+                let reportContent = `
 					<div class="container">
                         <div class="row">
                             <div class="col-xs-12">
-                                <h3 style="text-align:center">Product Price List</h3>
+                                <h3 style="text-align:center">Exchange Record</h3>
                             </div>
                         </div>
 						<div class="row">
@@ -155,18 +165,18 @@
 					</div>
 				`;
 
-				var reportWindow = window.open('', 'PRINT', `height=${screen.height}, width=${screen.width}, left=0, top=0`);
-				reportWindow.document.write(`
-					<?php $this->load->view('Administrator/reports/reportHeader.php');?>
+                var reportWindow = window.open('', 'PRINT', `height=${screen.height}, width=${screen.width}, left=0, top=0`);
+                reportWindow.document.write(`
+					<?php $this->load->view('Administrator/reports/reportHeader.php'); ?>
 				`);
 
-				reportWindow.document.body.innerHTML += reportContent;
+                reportWindow.document.body.innerHTML += reportContent;
 
-				reportWindow.focus();
-				await new Promise(resolve => setTimeout(resolve, 1000));
-				reportWindow.print();				reportWindow.close();
-			}
+                reportWindow.focus();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                reportWindow.print();
+                reportWindow.close();
+            }
         }
     })
 </script>
-

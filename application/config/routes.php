@@ -460,3 +460,4 @@ $route['exchange'] = 'Administrator/Exchange';
 $route['get_exchanges'] = 'Administrator/Exchange/getExchanges';
 $route['add_exchange'] = 'Administrator/Exchange/addExchange';
 $route['delete_exchange'] = 'Administrator/Exchange/addExchange';
+$route['exchange_record'] = 'Administrator/Exchange/exchange_record';

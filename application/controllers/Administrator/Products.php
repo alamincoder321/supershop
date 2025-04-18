@@ -359,8 +359,27 @@ class Products extends CI_Controller
                     and tm.status = 'a'
                     " . (isset($data->date) && $data->date != null ? " and tm.transfer_date <= '$data->date'" : "") . "
                 ) as transferred_to_quantity,
+                
+                (select ifnull(sum(exd.quantity), 0)
+                    from tbl_exchange_detail exd
+                    join tbl_exchange ex on ex.id = exd.exchange_id
+                    where exd.product_id = p.Product_SlNo
+                    and exd.branchId = '$branchId'
+                    and ex.Status = 'a'
+                    " . (isset($data->date) && $data->date != null ? " and ex.date <= '$data->date'" : "") . "
+                ) as exchange_out_quantity,
+                
+                (select ifnull(sum(sd.SaleDetails_TotalQuantity), 0)
+                    from tbl_exchange_detail exd
+                    join tbl_exchange ex on ex.id = exd.exchange_id
+                    left join tbl_saledetails sd on sd.SaleDetails_SlNo = exd.sale_detail_id
+                    where exd.detail_product_id = p.Product_SlNo
+                    and exd.branchId = '$branchId'
+                    and ex.Status = 'a'
+                    " . (isset($data->date) && $data->date != null ? " and ex.date <= '$data->date'" : "") . "
+                ) as exchange_in_quantity,
                         
-                (select (purchased_quantity + sales_returned_quantity + transferred_to_quantity) - (sold_quantity + purchase_returned_quantity + damaged_quantity + transferred_from_quantity)) as current_quantity,
+                (select (purchased_quantity + sales_returned_quantity + transferred_to_quantity + exchange_in_quantity) - (sold_quantity + exchange_out_quantity + purchase_returned_quantity + damaged_quantity + transferred_from_quantity)) as current_quantity,
                 (select p.Product_Purchase_Rate * current_quantity) as stock_value
             from tbl_product p
             left join tbl_productcategory pc on pc.ProductCategory_SlNo = p.ProductCategory_ID
@@ -548,6 +567,37 @@ class Products extends CI_Controller
             join tbl_damage d on d.Damage_SlNo = dmd.Damage_SlNo
             where dmd.Product_SlNo = " . $data->productId . "
             and d.Damage_brunchid = " . $this->brunch . "
+
+            UNION
+            select 
+                'h' as sequence,
+                exd.id as id,
+                ex.date as date,
+                concat('Exchange In - ', ex.invoice) as description,
+                0 as rate,
+                sd.SaleDetails_TotalQuantity as in_quantity,
+                0 as out_quantity
+            from tbl_exchange_detail exd
+            join tbl_exchange ex on ex.id = exd.exchange_id
+            left join tbl_saledetails sd on sd.SaleDetails_SlNo = exd.sale_detail_id
+            where exd.detail_product_id = " . $data->productId . "
+            and exd.branchId = " . $this->brunch . "
+            and exd.Status = 'a'
+            
+            UNION
+            select 
+                'i' as sequence,
+                exd.id as id,
+                ex.date as date,
+                concat('Exchange Out - ', ex.invoice) as description,
+                0 as rate,
+                0 as in_quantity,
+                exd.quantity as out_quantity
+            from tbl_exchange_detail exd
+            join tbl_exchange ex on ex.id = exd.exchange_id
+            where exd.product_id = " . $data->productId . "
+            and exd.branchId = " . $this->brunch . "
+            and exd.Status = 'a'
 
             order by date, sequence, id
         ")->result();

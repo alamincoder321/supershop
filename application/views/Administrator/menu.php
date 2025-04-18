@@ -33,13 +33,13 @@ if ($module == 'dashboard' or $module == '') {
 		</li>
 
 		<?php if ($this->session->userdata('BRANCHid') == 1 && (isset($CheckSuperAdmin) || isset($CheckAdmin))) : ?>
-		<li class="">
-			<a href="<?php echo base_url(); ?>module/PurchaseModule">
-				<i class="menu-icon fa fa-cart-plus" style="font-size:23px;"></i>
-				<span class="menu-text"> Manage Purchase </span>
-			</a>
-			<b class="arrow"></b>
-		</li>
+			<li class="">
+				<a href="<?php echo base_url(); ?>module/PurchaseModule">
+					<i class="menu-icon fa fa-cart-plus" style="font-size:23px;"></i>
+					<span class="menu-text"> Manage Purchase </span>
+				</a>
+				<b class="arrow"></b>
+			</li>
 		<?php endif; ?>
 
 		<li class="">
@@ -390,16 +390,6 @@ if ($module == 'dashboard' or $module == '') {
 				<b class="arrow"></b>
 			</li>
 		<?php endif; ?>
-		
-		<?php if (array_search("exchange", $access) > -1 || isset($CheckSuperAdmin) || isset($CheckAdmin)) : ?>
-			<li class="">
-				<a href="<?php echo base_url(); ?>exchange">
-					<i class="menu-icon fa fa-exchange"></i>
-					<span class="menu-text"> Sales Exchange </span>
-				</a>
-				<b class="arrow"></b>
-			</li>
-		<?php endif; ?>
 
 
 		<!-- <?php if (array_search("sales/service", $access) > -1 || isset($CheckSuperAdmin) || isset($CheckAdmin)) : ?>
@@ -417,6 +407,26 @@ if ($module == 'dashboard' or $module == '') {
 				<a href="<?php echo base_url(); ?>salesrecord">
 					<i class="menu-icon fa fa-list"></i>
 					<span class="menu-text"> Sales Record </span>
+				</a>
+				<b class="arrow"></b>
+			</li>
+		<?php endif; ?>
+
+		<?php if (array_search("exchange", $access) > -1 || isset($CheckSuperAdmin) || isset($CheckAdmin)) : ?>
+			<li class="">
+				<a href="<?php echo base_url(); ?>exchange">
+					<i class="menu-icon fa fa-exchange"></i>
+					<span class="menu-text"> Sales Exchange </span>
+				</a>
+				<b class="arrow"></b>
+			</li>
+		<?php endif; ?>
+
+		<?php if (array_search("exchange_record", $access) > -1 || isset($CheckSuperAdmin) || isset($CheckAdmin)) : ?>
+			<li class="">
+				<a href="<?php echo base_url(); ?>exchange_record">
+					<i class="menu-icon fa fa-list"></i>
+					<span class="menu-text"> Exchange Record </span>
 				</a>
 				<b class="arrow"></b>
 			</li>

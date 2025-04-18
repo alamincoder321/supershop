@@ -285,10 +285,12 @@ class Sales extends CI_Controller
                     sd.*,
                     p.Product_Name,
                     p.Product_Code,
-                    pc.ProductCategory_Name
+                    pc.ProductCategory_Name,
+                    ifnull(ed.exchange_id, 'false') as is_exchange
                 from tbl_saledetails sd
                 join tbl_product p on p.Product_SlNo = sd.Product_IDNo
                 join tbl_productcategory pc on pc.ProductCategory_SlNo = p.ProductCategory_ID
+                left join tbl_exchange_detail ed on ed.sale_detail_id = sd.SaleDetails_SlNo
                 where sd.SaleMaster_IDNo = ?
                 and sd.Status != 'd'
             ", $sale->SaleMaster_SlNo)->result();
@@ -339,11 +341,13 @@ class Sales extends CI_Controller
                     p.Product_Code,
                     p.Product_Name,
                     pc.ProductCategory_Name,
-                    u.Unit_Name
+                    u.Unit_Name,
+                    ifnull(ed.exchange_id, 'false') as is_exchange
                 from tbl_saledetails sd
                 join tbl_product p on p.Product_SlNo = sd.Product_IDNo
                 join tbl_productcategory pc on pc.ProductCategory_SlNo = p.ProductCategory_ID
                 join tbl_unit u on u.Unit_SlNo = p.Unit_ID
+                left join tbl_exchange_detail ed on ed.sale_detail_id = sd.SaleDetails_SlNo
                 where sd.SaleMaster_IDNo = ?
             ", $data->salesId)->result();
 
@@ -1310,129 +1314,7 @@ class Sales extends CI_Controller
         $data['content'] = $this->load->view('Administrator/sales/sales_record', $data, TRUE);
         $this->load->view('Administrator/index', $data);
     }
-
-
-
-
-    function select_customerName()
-    {
-?>
-        <div class="form-group">
-            <label class="col-sm-2 control-label no-padding-right" for="customerID"> Select Customer </label>
-            <div class="col-sm-3">
-                <select name="" id="customerID" data-placeholder="Choose a Customer..." class="chosen-select">
-                    <option value="All">All</option>
-                    <?php
-                    $sql = $this->db->query("SELECT * FROM tbl_customer where Customer_brunchid = '" . $this->sbrunch . "' AND Customer_Type = 'Local' order by Customer_Name asc");
-                    $row = $sql->result();
-                    foreach ($row as $row) { ?>
-
-                        <option value="<?php echo $row->Customer_SlNo; ?>"><?php echo $row->Customer_Name; ?> (<?php echo $row->Customer_Code; ?>)</option>
-                    <?php } ?>
-                </select>
-            </div>
-        </div>
-    <?php
-    }
-    function select_InvCustomerName()
-    {
-    ?>
-        <div class="form-group">
-            <div class="col-sm-3">
-                <select id="Salestype" class="chosen-select" name="Salestype">
-                    <option value="All">All</option>
-                    <?php
-                    $sql = $this->db->query("SELECT * FROM tbl_customer where Customer_brunchid = '" . $this->sbrunch . "' AND Customer_Type = 'Local' order by Customer_Name asc");
-                    $row = $sql->result();
-                    foreach ($row as $row) { ?>
-
-                        <option value="<?php echo $row->Customer_SlNo; ?>"><?php echo $row->Customer_Name; ?> (<?php echo $row->Customer_Code; ?>)</option>
-                    <?php } ?>
-                </select>
-            </div>
-        </div>
-<?php
-    }
-    function sales_customerName()
-    {
-        $id = $this->input->post('customerID');
-        $sql = mysql_query("SELECT * FROM tbl_customer WHERE Customer_SlNo = '$id'");
-        $row = mysql_fetch_array($sql);
-        $datas['customerName'] = $row['Customer_Name'];
-        $this->load->view('Administrator/sales/salesrecord_customername', $datas);
-    }
-
-    function search_sales_record()
-    {
-        // print_r($this->input->post());die();
-        $data = array();
-        $dAta['searchtype'] = $searchtype = $this->input->post('searchtype');
-        $dAta['Sales_startdate'] = $Sales_startdate = $this->input->post('Sales_startdate');
-        $dAta['Sales_enddate'] = $Sales_enddate = $this->input->post('Sales_enddate');
-        $dAta['customerID'] = $customerID = $this->input->post('customerID');
-        $dAta['productID'] = $productID = $this->input->post('productID');
-        $dAta['adminId'] = $adminId = $this->input->post('adminId');
-        $dAta['Salestype'] = $Salestype = $this->input->post('Salestype');
-
-
-        $this->session->set_userdata($dAta);
-
-        if ($searchtype == "All") {
-            if ($Salestype == 'All') {
-                $data['records'] = $this->Sale_model->all_sale_record_data($Sales_startdate, $Sales_enddate);
-            } else {
-                $data['records'] = $this->Sale_model->sale_type_wise_sale_record($Salestype, $Sales_startdate, $Sales_enddate);
-            }
-            $data["invoive"] = "All";
-        }
-        if ($searchtype == "Customer") {
-            if ($Salestype == 'All') {
-
-                $data['records'] = $this->Sale_model->customer_wise_sale_record($customerID, $Sales_startdate, $Sales_enddate);
-            } else {
-                $data['records'] = $this->Sale_model->sale_type_wise_sale_record($Salestype, $Sales_startdate, $Sales_enddate);
-            }
-            $data["invoive"] = "";
-        }
-        if ($searchtype == "invoice") {
-            if ($Salestype == 'All') {
-                $data['records'] = $this->Sale_model->all_sale_record_data($Sales_startdate, $Sales_enddate);
-                $data["invoive"] = "invoice";
-            } else {
-                $data['records'] = $this->Sale_model->cus_sale_record_data($Salestype, $Sales_startdate, $Sales_enddate);
-                $data["invoive"] = "invoice";
-            }
-        }
-        if ($searchtype == "Qty") {
-            if ($productID == 'All' && $customerID == 'All') {
-                $data['records'] = $this->Sale_model->all_product_sale_qty($Sales_startdate, $Sales_enddate);
-            } else if ($productID == 'All' && $customerID != 'All') {
-                $data['records'] = $this->Sale_model->customer_wise_product_sale_qty($customerID, $Sales_startdate, $Sales_enddate);
-            } else if ($productID != 'All' && $customerID == 'All') {
-                $data['records'] = $this->Sale_model->product_sale_qty($productID, $Sales_startdate, $Sales_enddate);
-            } else {
-                $data['records'] = $this->Sale_model->customer_and_product_sale_qty($productID, $customerID, $Sales_startdate, $Sales_enddate);
-            }
-            $data["invoive"] = "Qty";
-        }
-
-        if ($searchtype == "User") {
-
-            $data['records'] = $this->Sale_model->all_sale_record_data_by_user($adminId, $Sales_startdate, $Sales_enddate);
-            $data["invoive"] = "User";
-        }
-
-        // echo "<pre>";
-        // print_r($data);die();
-        $this->load->view('Administrator/sales/sales_record_list', $data);
-    }
-
-    function sales_stock()
-    {
-        $data['title'] = "Sales Stock";
-        $data['content'] = $this->load->view('Administrator/stock/sales_stock', $data, TRUE);
-        $this->load->view('Administrator/index', $data);
-    }
+    
     public function saleInvoicePrint($saleId)
     {
         $data['title'] = "Sales Invoice";
