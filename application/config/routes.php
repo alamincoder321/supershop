@@ -459,5 +459,5 @@ $route['get_investment_accounts'] = 'Administrator/Invest/getInvestmentAccounts'
 $route['exchange'] = 'Administrator/Exchange';
 $route['get_exchanges'] = 'Administrator/Exchange/getExchanges';
 $route['add_exchange'] = 'Administrator/Exchange/addExchange';
-$route['delete_exchange'] = 'Administrator/Exchange/addExchange';
+$route['delete_exchange'] = 'Administrator/Exchange/deleteExchange';
 $route['exchange_record'] = 'Administrator/Exchange/exchange_record';

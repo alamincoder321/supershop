@@ -403,6 +403,20 @@ if ($module == 'dashboard' or $module == '') { ?>
 						</div>
 					</div>
 				<?php endif; ?>
+				<?php if (array_search("salesrecord", $access) > -1 || isset($CheckSuperAdmin) || isset($CheckAdmin)) : ?>
+					<div class="col-md-2 col-xs-6 custom-padding ">
+						<div class="col-md-12 section20">
+							<a href="<?php echo base_url(); ?>salesrecord">
+								<div class="logo">
+									<i class="menu-icon fa fa-list"></i>
+								</div>
+								<div class="textModule">
+									Sales Record
+								</div>
+							</a>
+						</div>
+					</div>
+				<?php endif; ?>
 				<?php if (array_search("exchange", $access) > -1 || isset($CheckSuperAdmin) || isset($CheckAdmin)) : ?>
 					<div class="col-md-2 col-xs-6 custom-padding ">
 						<div class="col-md-12 section20">
@@ -417,6 +431,7 @@ if ($module == 'dashboard' or $module == '') { ?>
 						</div>
 					</div>
 				<?php endif; ?>
+				
 				<!-- <?php if (array_search("sales/service", $access) > -1 || isset($CheckSuperAdmin) || isset($CheckAdmin)) : ?>
 					<div class="col-md-2 col-xs-6 custom-padding ">
 						<div class="col-md-12 section20">
@@ -431,15 +446,15 @@ if ($module == 'dashboard' or $module == '') { ?>
 						</div>
 					</div>
 				<?php endif; ?> -->
-				<?php if (array_search("salesrecord", $access) > -1 || isset($CheckSuperAdmin) || isset($CheckAdmin)) : ?>
+				<?php if (array_search("exchange_record", $access) > -1 || isset($CheckSuperAdmin) || isset($CheckAdmin)) : ?>
 					<div class="col-md-2 col-xs-6 custom-padding ">
 						<div class="col-md-12 section20">
-							<a href="<?php echo base_url(); ?>salesrecord">
+							<a href="<?php echo base_url(); ?>exchange_record">
 								<div class="logo">
 									<i class="menu-icon fa fa-list"></i>
 								</div>
 								<div class="textModule">
-									Sales Record
+									Exchange Record
 								</div>
 							</a>
 						</div>
@@ -459,7 +474,7 @@ if ($module == 'dashboard' or $module == '') { ?>
 						</div>
 					</div>
 				<?php endif; ?>
-				<?php if (array_search("salesReturn", $access) > -1 || isset($CheckSuperAdmin) || isset($CheckAdmin)) : ?>
+				<!-- <?php if (array_search("salesReturn", $access) > -1 || isset($CheckSuperAdmin) || isset($CheckAdmin)) : ?>
 					<div class="col-md-2 col-xs-6 custom-padding ">
 						<div class="col-md-12 section20">
 							<a href="<?php echo base_url(); ?>salesReturn">
@@ -486,7 +501,7 @@ if ($module == 'dashboard' or $module == '') { ?>
 							</a>
 						</div>
 					</div>
-				<?php endif; ?>
+				<?php endif; ?> -->
 				
 				<?php if (array_search("currentStock", $access) > -1 || isset($CheckSuperAdmin) || isset($CheckAdmin)) : ?>
 					<div class="col-md-2 col-xs-6 custom-padding ">

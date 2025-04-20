@@ -38,9 +38,11 @@
                 <ul ref="sales">
                     <li><input type="checkbox" class="access" value="sales/product" v-model="access"> Sales Add</li>
                     <li><input type="checkbox" class="access" value="sales/service" v-model="access"> Service Add</li>
-                    <li><input type="checkbox" class="access" value="salesReturn" v-model="access"> Sale Return</li>
+                    <!-- <li><input type="checkbox" class="access" value="salesReturn" v-model="access"> Sale Return</li> -->
                     <li><input type="checkbox" class="access" value="salesrecord" v-model="access"> Sales Record</li>
-                    <li><input type="checkbox" class="access" value="currentStock" v-model="access"> Stock</li>
+                    <li><input type="checkbox" class="access" value="exchange" v-model="access"> Sales Exchange</li>
+                    <li><input type="checkbox" class="access" value="exchange_record" v-model="access"> Exchange Record</li>
+                    <li><input type="checkbox" class="access" value="currentStock" v-model="access"> Stock Report </li>
                     <!-- <li><input type="checkbox" class="access" value="quotation" v-model="access"> Quotation Entry</li> -->
                 </ul>
             </div>
@@ -69,8 +71,8 @@
                 <input type="checkbox" id="salesReports" class="group-head" @click="onClickGroupHeads"> <strong>Sales Reports</strong>
                 <ul ref="salesReports">
                     <li><input type="checkbox" class="access" value="salesinvoice" v-model="access"> Sales Invoice</li>
-                    <li><input type="checkbox" class="access" value="returnList" v-model="access"> Sales Return List</li>
-                    <li><input type="checkbox" class="access" value="sale_return_details" v-model="access"> Sales Return Details</li>
+                    <!-- <li><input type="checkbox" class="access" value="returnList" v-model="access"> Sales Return List</li> -->
+                    <!-- <li><input type="checkbox" class="access" value="sale_return_details" v-model="access"> Sales Return Details</li> -->
                     <li><input type="checkbox" class="access" value="customerDue" v-model="access"> Customer Due List</li>
                     <li><input type="checkbox" class="access" value="customerPaymentReport" v-model="access"> Customer Payment Report</li>
                     <li><input type="checkbox" class="access" value="customer_payment_history" v-model="access"> Customer Payment History</li>

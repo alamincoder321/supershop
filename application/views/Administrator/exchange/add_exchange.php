@@ -474,7 +474,7 @@
                         return;
                     }
                 }
-                if (this.exchange.saletotal < this.exchange.exchangeAmount) {
+                if (this.exchange.saletotal > this.exchange.exchangeAmount) {
                     alert("Exchange amount cannot be less than sale amount.");
                     return;
                 }

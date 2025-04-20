@@ -124,7 +124,7 @@
 							<th>Pur. ReturnQty</th>
 							<th>Damaged Qty</th>
 							<th>Sold Qty</th>
-							<th>Sale ReturnQty</th>
+							<!-- <th>Sale ReturnQty</th> -->
 							<th>Exc. InQty</th>
 							<th>Exc. OutQty</th>
 							<th>Trans. InQty</th>
@@ -143,7 +143,7 @@
 							<td>{{ product.purchase_returned_quantity }}</td>
 							<td>{{ product.damaged_quantity }}</td>
 							<td>{{ product.sold_quantity }}</td>
-							<td>{{ product.sales_returned_quantity }}</td>
+							<!-- <td>{{ product.sales_returned_quantity }}</td> -->
 							<td>{{ product.exchange_in_quantity }}</td>
 							<td>{{ product.exchange_out_quantity }}</td>
 							<td>{{ product.transferred_to_quantity}}</td>
@@ -155,7 +155,7 @@
 					</tbody>
 					<tfoot>
 						<tr>
-							<th colspan="14" style="text-align:right;">Total Stock Value</th>
+							<th colspan="13" style="text-align:right;">Total Stock Value</th>
 							<th>{{ totalStockValue | decimal }}</th>
 						</tr>
 					</tfoot>

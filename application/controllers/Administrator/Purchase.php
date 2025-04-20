@@ -523,7 +523,6 @@ class Purchase extends CI_Controller
                 );
 
                 $this->db->insert('tbl_purchasedetails', $purchaseDetails);
-                $previousStock = $this->mt->productStock($product->productId);
 
                 $inventoryCount = $this->db->query("select * from tbl_currentinventory where product_id = ? and branch_id = ?", [$product->productId, $this->session->userdata('BRANCHid')])->num_rows();
                 if ($inventoryCount == 0) {
@@ -547,13 +546,11 @@ class Purchase extends CI_Controller
 
                 $this->db->query("
                     update tbl_product set 
-                    Product_Purchase_Rate = (((Product_Purchase_Rate * ?) + ?) / ?), 
+                    Product_Purchase_Rate = ?, 
                     Product_SellingPrice = ? 
                     where Product_SlNo = ?
                 ", [
-                    $previousStock,
-                    $product->total,
-                    ($previousStock + $product->quantity),
+                    $product->purchaseRate,
                     $product->salesRate,
                     $product->productId
                 ]);
@@ -641,16 +638,16 @@ class Purchase extends CI_Controller
                     and branch_id = ?
                 ", [$product->PurchaseDetails_TotalQuantity, $product->Product_IDNo, $this->session->userdata('BRANCHid')]);
 
-                $this->db->query("
-                    update tbl_product set 
-                    Product_Purchase_Rate = (((Product_Purchase_Rate * ?) - ?) / ?)
-                    where Product_SlNo = ?
-                ", [
-                    $previousStock,
-                    $product->PurchaseDetails_TotalAmount,
-                    ($previousStock - $product->PurchaseDetails_TotalQuantity),
-                    $product->Product_IDNo
-                ]);
+                // $this->db->query("
+                //     update tbl_product set 
+                //     Product_Purchase_Rate = (((Product_Purchase_Rate * ?) - ?) / ?)
+                //     where Product_SlNo = ?
+                // ", [
+                //     $previousStock,
+                //     $product->PurchaseDetails_TotalAmount,
+                //     ($previousStock - $product->PurchaseDetails_TotalQuantity),
+                //     $product->Product_IDNo
+                // ]);
             }
 
             foreach ($data->cartProducts as $product) {
@@ -690,13 +687,11 @@ class Purchase extends CI_Controller
 
                 $this->db->query("
                     update tbl_product set 
-                    Product_Purchase_Rate = (((Product_Purchase_Rate * ?) + ?) / ?), 
+                    Product_Purchase_Rate = ?, 
                     Product_SellingPrice = ? 
                     where Product_SlNo = ?
                 ", [
-                    $previousStock,
-                    $product->total,
-                    ($previousStock + $product->quantity),
+                    $product->purchaseRate,
                     $product->salesRate,
                     $product->productId
                 ]);
