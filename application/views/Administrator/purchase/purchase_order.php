@@ -159,9 +159,13 @@
 								</div>
 
 								<div class="form-group">
-									<label class="col-xs-4 control-label no-padding-right"> </label>
-									<div class="col-xs-8">
-										<button type="submit" class="btn btn-default pull-right">Add Cart</button>
+									<label class="col-xs-4 control-label no-padding-right"></label>
+									<label class="col-xs-4 control-label" for="isFree" style="display: flex;align-items:center;cursor:pointer;">
+										<input type="checkbox" @change="onChangeFreeProduct" style="margin: 0px;width: 16px;height: 16px;cursor:pointer;" id="isFree" :true-value="`yes`" :false-value="`no`" v-model="isFree">
+										<span style="margin: 0;margin-left: 6px;">Is Free Product</span>
+									</label>
+									<div class="col-xs-4">
+										<button type="submit" class="pull-right">Add Cart</button>
 									</div>
 								</div>
 							</form>
@@ -187,7 +191,7 @@
 						</tr>
 					</thead>
 					<tbody style="display:none;" v-bind:style="{display: cart.length > 0 ? '' : 'none'}">
-						<tr v-for="(product, sl) in cart">
+						<tr v-for="(product, sl) in cart" :style="{background: product.isFree == 'yes' ? '#ffd150b3' : ''}" :title="product.isFree == 'yes' ? 'Free Product' : ''">
 							<td>{{ sl + 1}}</td>
 							<td>{{ product.name }}</td>
 							<td>{{ product.categoryName }}</td>
@@ -410,6 +414,7 @@
 					Product_SellingPrice: 0,
 					total: ''
 				},
+				isFree: 'no',
 				cart: [],
 				purchaseOnProgress: false,
 				userType: '<?php echo $this->session->userdata("accountType") ?>'
@@ -511,14 +516,38 @@
 					return
 				}
 				if (this.selectedProduct.Product_SlNo != '') {
+					if (this.isFree == 'yes') {
+						this.selectedProduct.Product_Purchase_Rate = 0;
+					}
 					this.$refs.quantity.focus();
+				}
+			},
+			onChangeFreeProduct() {
+				if (this.selectedProduct == null) {
+					this.selectedProduct = {
+						Product_SlNo: '',
+						Product_Code: '',
+						display_text: 'Select Product',
+						Product_Name: '',
+						Unit_Name: '',
+						quantity: '',
+						Product_Purchase_Rate: '',
+						Product_SellingPrice: 0,
+						total: ''
+					}
+					return
+				}
+				if (this.selectedProduct.Product_SlNo != '') {
+					this.selectedProduct.Product_Purchase_Rate = 0;
+					this.selectedProduct.total = 0;
+					this.productTotal();
 				}
 			},
 			productTotal() {
 				this.selectedProduct.total = this.selectedProduct.quantity * this.selectedProduct.Product_Purchase_Rate;
 			},
 			addToCart() {
-				let cartInd = this.cart.findIndex(p => p.productId == this.selectedProduct.Product_SlNo);
+				let cartInd = this.cart.findIndex(p => (p.productId == this.selectedProduct.Product_SlNo) && (p.isFree == this.isFree));
 				if (cartInd > -1) {
 					alert('Product exists in cart');
 					return;
@@ -532,7 +561,8 @@
 					purchaseRate: this.selectedProduct.Product_Purchase_Rate,
 					salesRate: this.selectedProduct.Product_SellingPrice,
 					quantity: this.selectedProduct.quantity,
-					total: this.selectedProduct.total
+					total: this.selectedProduct.total,
+					isFree: this.isFree
 				}
 
 				this.cart.push(product);
@@ -564,6 +594,8 @@
 					Product_SellingPrice: 0,
 					total: ''
 				}
+
+				this.isFree = 'no';
 			},
 			calculateTotal() {
 				this.purchase.subTotal = this.cart.reduce((prev, curr) => {
@@ -677,7 +709,8 @@
 							purchaseRate: product.PurchaseDetails_Rate,
 							salesRate: product.Product_SellingPrice,
 							quantity: product.PurchaseDetails_TotalQuantity,
-							total: product.PurchaseDetails_TotalAmount
+							total: product.PurchaseDetails_TotalAmount,
+							isFree: product.isFree
 						}
 
 						this.cart.push(cartProduct);

@@ -18,8 +18,8 @@
 <body>
 	<div class="container">
 		<div class="cover">
-			<div class="front">
-				<img src="<?php echo base_url(); ?>assets/login/images/login.webp" alt="">
+			<div class="front" style="border-right: 1px dashed #2d402d;">
+				<img src="<?php echo base_url(); ?>assets/login/images/login.jpg" alt="">
 				<div class="text">
 					<span class="text-1">Online Super Shop Software</span>
 				</div>

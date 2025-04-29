@@ -50,7 +50,13 @@ const salesInvoice = Vue.component('sales-invoice', {
                             <tbody>
                                 <tr v-for="(product, sl) in cart">
                                     <td>{{ sl + 1 }}</td>
-                                    <td class="text-align:left;">{{ product.Product_Name }}</td>
+                                    <td style="text-align:left;" :style="{lineHeight: product.isFree == 'yes' ? '0.9' : ''}">
+                                        {{ product.Product_Name }} - {{product.Product_Code}}
+                                         <span v-if="product.isFree == 'yes'">
+                                            <br>
+                                            <i style="font-weight: 700;font-size: 10px;">Free</i>
+                                         </span>
+                                    </td>
                                     <td>{{ product.SaleDetails_TotalQuantity }} {{ product.Unit_Name }}</td>
                                     <td>{{ product.SaleDetails_Rate }}</td>
                                     <td align="right">{{ product.SaleDetails_TotalAmount }}</td>

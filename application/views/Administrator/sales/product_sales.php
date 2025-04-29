@@ -212,8 +212,11 @@
 							</div>
 
 							<div class="form-group">
-								<label class="col-xs-3 control-label no-padding-right"> </label>
-								<div class="col-xs-9">
+								<label class="col-xs-7 control-label" for="isFree" style="display: flex;align-items:center;cursor:pointer;">
+									<input type="checkbox" @change="onChangeFreeProduct" style="margin: 0px;width: 16px;height: 16px;cursor:pointer;" id="isFree" :true-value="`yes`" :false-value="`no`" v-model="isFree">
+									<span style="margin: 0px;margin-left: 5px;margin-top: 1px;">Is Free Product</span>
+								</label>
+								<div class="col-xs-5">
 									<button type="button" @click="addToCart" style="padding: 3px 6px; background: rgb(0, 126, 187) !important; border-color: rgb(0, 126, 187) !important; outline: none; border-radius: 6px;" class="btn pull-right">Add to Cart</button>
 								</div>
 							</div>
@@ -243,12 +246,12 @@
 							<th style="width:15%;color:#000;">Category</th>
 							<th style="width:7%;color:#000;">Qty</th>
 							<th style="width:8%;color:#000;">Rate</th>
-							<th style="width:15%;color:#000;">Total Amount</th>
+							<th style="width:15%;color:#000;">Total</th>
 							<th style="width:10%;color:#000;">Action</th>
 						</tr>
 					</thead>
 					<tbody style="display:none;" v-bind:style="{display: cart.length > 0 ? '' : 'none'}">
-						<tr v-for="(product, sl) in cart">
+						<tr v-for="(product, sl) in cart" :style="{background: product.isFree == 'yes' ? '#ffd150b3' : ''}" :title="product.isFree == 'yes' ? 'Free Product' : ''">
 							<td>{{ sl + 1 }}</td>
 							<td>{{ product.name }} - {{ product.productCode }}</td>
 							<td>{{ product.categoryName }}</td>
@@ -471,6 +474,7 @@
 				},
 				vatPercent: 0,
 				discountPercent: 0,
+				isFree: 'no',
 				cart: [],
 				categories: [],
 				selectedCategory: null,
@@ -742,12 +746,14 @@
 					return;
 				}
 				if ((this.selectedProduct.Product_SlNo != '' || this.selectedProduct.Product_SlNo != 0) && this.sales.isService == 'false') {
+					if (this.isFree == 'yes') {
+						this.selectedProduct.Product_SellingPrice = 0;
+					}
 					this.productStock = await axios.post('/get_product_stock', {
 						productId: this.selectedProduct.Product_SlNo
 					}).then(res => {
 						return res.data;
 					})
-
 					this.productStockText = this.productStock > 0 ? "Available Stock" : "Stock Unavailable";
 					if (this.barcode == true) {
 						this.$refs.barcode.focus();
@@ -811,6 +817,27 @@
 					this.productStockText = '';
 				})
 			},
+			onChangeFreeProduct() {
+				if (this.selectedProduct == null) {
+					this.selectedProduct = {
+						Product_SlNo: '',
+						Product_Code: '',
+						display_text: 'Select Product',
+						Product_Name: '',
+						Unit_Name: '',
+						quantity: '',
+						Product_Purchase_Rate: '',
+						Product_SellingPrice: 0,
+						total: ''
+					}
+					return
+				}
+				if (this.selectedProduct.Product_SlNo != '') {
+					this.selectedProduct.Product_SellingPrice = 0;
+					this.selectedProduct.total = 0;
+					this.productTotal();
+				}
+			},
 			addToCart() {
 				let product = {
 					productId: this.selectedProduct.Product_SlNo,
@@ -822,7 +849,7 @@
 					quantity: this.selectedProduct.quantity,
 					total: this.selectedProduct.total,
 					purchaseRate: this.selectedProduct.Product_Purchase_Rate,
-					warranty: this.selectedProduct.warranty == undefined ? 'n/a' : this.selectedProduct.warranty,
+					isFree: this.isFree
 				}
 
 				if (product.productId == '' && !this.barcode) {
@@ -835,12 +862,12 @@
 					return;
 				}
 
-				if ((product.salesRate == 0 || product.salesRate == '') && !this.barcode) {
-					alert('Enter sales rate');
-					return;
-				}
+				// if ((product.salesRate == 0 || product.salesRate == '') && !this.barcode) {
+				// 	alert('Enter sales rate');
+				// 	return;
+				// }
 
-				let cartInd = this.cart.findIndex(p => p.productId == product.productId);
+				let cartInd = this.cart.findIndex(p => (p.productId == product.productId) && (p.isFree == product.isFree));
 				if (cartInd > -1) {
 					let cartProduct = this.cart[cartInd];
 					product.quantity = parseFloat(+cartProduct.quantity + +product.quantity);
@@ -873,10 +900,10 @@
 					Product_SellingPrice: 0,
 					vat: 0,
 					total: 0,
-					warranty: ''
 				}
 				this.productStock = '';
 				this.productStockText = '';
+				this.isFree = 'no';
 			},
 			calculateTotal() {
 				this.sales.subTotal = this.cart.reduce((prev, curr) => {
@@ -890,7 +917,7 @@
 				} else {
 					this.discountPercent = (parseFloat(this.sales.discount) / parseFloat(this.sales.subTotal) * 100).toFixed(2);
 				}
-				this.sales.total = ((parseFloat(this.sales.subTotal) + parseFloat(this.sales.vat) + parseFloat(this.sales.transportCost)) - parseFloat(+this.sales.discount + + this.sales.pointAmount)).toFixed(2);
+				this.sales.total = ((parseFloat(this.sales.subTotal) + parseFloat(this.sales.vat) + parseFloat(this.sales.transportCost)) - parseFloat(+this.sales.discount + +this.sales.pointAmount)).toFixed(2);
 
 				if (event.target.id == 'cashPaid' || event.target.id == 'bankPaid') {
 					this.sales.paid = parseFloat(parseFloat(this.sales.cashPaid) + parseFloat(this.sales.bankPaid)).toFixed(2);
@@ -975,27 +1002,27 @@
 				await axios.post('/get_sales', {
 					salesId: this.sales.salesId
 				}).then(res => {
-					let r                        = res.data;
-					let sales                    = r.sales[0];
-					    this.sales.salesBy       = sales.AddBy;
-					    this.sales.salesFrom     = sales.SaleMaster_branchid;
-					    this.sales.salesDate     = sales.SaleMaster_SaleDate;
-					    this.sales.salesType     = sales.SaleMaster_SaleType;
-					    this.sales.customerId    = sales.SalseCustomer_IDNo;
-					    this.sales.employeeId    = sales.Employee_SlNo;
-					    this.sales.subTotal      = sales.SaleMaster_SubTotalAmount;
-					    this.sales.discount      = sales.SaleMaster_TotalDiscountAmount;
-					    this.sales.pointAmount   = sales.pointAmount;
-					    this.sales.vat           = sales.SaleMaster_TaxAmount;
-					    this.sales.transportCost = sales.SaleMaster_Freight;
-					    this.sales.total         = sales.SaleMaster_TotalSaleAmount;
-					    this.sales.cashPaid      = sales.SaleMaster_cashPaid;
-					    this.sales.bankPaid      = sales.SaleMaster_bankPaid;
-					    this.sales.bank_id       = sales.bank_id;
-					    this.sales.paid          = sales.SaleMaster_PaidAmount;
-					    this.sales.due           = sales.SaleMaster_DueAmount;
-					    this.sales.previousDue   = sales.SaleMaster_Previous_Due;
-					    this.sales.note          = sales.SaleMaster_Description;
+					let r = res.data;
+					let sales = r.sales[0];
+					this.sales.salesBy = sales.AddBy;
+					this.sales.salesFrom = sales.SaleMaster_branchid;
+					this.sales.salesDate = sales.SaleMaster_SaleDate;
+					this.sales.salesType = sales.SaleMaster_SaleType;
+					this.sales.customerId = sales.SalseCustomer_IDNo;
+					this.sales.employeeId = sales.Employee_SlNo;
+					this.sales.subTotal = sales.SaleMaster_SubTotalAmount;
+					this.sales.discount = sales.SaleMaster_TotalDiscountAmount;
+					this.sales.pointAmount = sales.pointAmount;
+					this.sales.vat = sales.SaleMaster_TaxAmount;
+					this.sales.transportCost = sales.SaleMaster_Freight;
+					this.sales.total = sales.SaleMaster_TotalSaleAmount;
+					this.sales.cashPaid = sales.SaleMaster_cashPaid;
+					this.sales.bankPaid = sales.SaleMaster_bankPaid;
+					this.sales.bank_id = sales.bank_id;
+					this.sales.paid = sales.SaleMaster_PaidAmount;
+					this.sales.due = sales.SaleMaster_DueAmount;
+					this.sales.previousDue = sales.SaleMaster_Previous_Due;
+					this.sales.note = sales.SaleMaster_Description;
 
 					this.oldCustomerId = sales.SalseCustomer_IDNo;
 					this.oldPreviousDue = sales.SaleMaster_Previous_Due;
@@ -1039,7 +1066,7 @@
 							quantity: product.SaleDetails_TotalQuantity,
 							total: product.SaleDetails_TotalAmount,
 							purchaseRate: product.Purchase_Rate,
-							warranty: product.warranty,
+							isFree: product.isFree,
 						}
 
 						this.cart.push(cartProduct);

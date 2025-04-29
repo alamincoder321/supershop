@@ -141,6 +141,7 @@ class Sales extends CI_Controller
                     'SaleDetails_Rate'          => $cartProduct->salesRate,
                     'SaleDetails_Tax'           => $cartProduct->vat,
                     'SaleDetails_TotalAmount'   => $cartProduct->total,
+                    'isFree'                    => $cartProduct->isFree,
                     'Status'                    => 'a',
                     'AddBy'                     => $this->session->userdata("FullName"),
                     'AddTime'                   => date('Y-m-d H:i:s'),
@@ -349,6 +350,7 @@ class Sales extends CI_Controller
                 join tbl_unit u on u.Unit_SlNo = p.Unit_ID
                 left join tbl_exchange_detail ed on ed.sale_detail_id = sd.SaleDetails_SlNo
                 where sd.SaleMaster_IDNo = ?
+                order by sd.SaleDetails_SlNo desc
             ", $data->salesId)->result();
 
             $res['saleDetails'] = $saleDetails;
@@ -497,6 +499,7 @@ class Sales extends CI_Controller
                     'SaleDetails_Rate'          => $cartProduct->salesRate,
                     'SaleDetails_Tax'           => $cartProduct->vat,
                     'SaleDetails_TotalAmount'   => $cartProduct->total,
+                    'isFree'                    => $cartProduct->isFree,
                     'Status'                    => 'a',
                     'AddBy'                     => $this->session->userdata("FullName"),
                     'AddTime'                   => date('Y-m-d H:i:s'),

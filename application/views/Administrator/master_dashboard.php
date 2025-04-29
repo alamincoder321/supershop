@@ -172,11 +172,11 @@ $companyInfo = $this->db->query("select * from tbl_company c order by c.Company_
 						<li class="active">Dashboard</li>
 					</ul>
 
-					<!-- <div class="nav-search" id="nav-search">
+					<div class="nav-search" id="nav-search">
 						<span style="font-weight: bold; color: #972366; font-size: 16px;">
 							<?php echo $this->session->userdata('Brunch_name');  ?>
 						</span>
-					</div> -->
+					</div>
 				</div>
 
 				<div class="page-content">

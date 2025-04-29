@@ -40,19 +40,23 @@ const purchaseInvoice = Vue.component('purchase-invoice', {
                                 <tr>
                                     <td>Sl.</td>
                                     <td>Description</td>
-                                    <td>Qnty</td>
-                                    <td>Unit</td>
+                                    <td>Quantity</td>
                                     <td>Unit Price</td>
-                                    <td>Total</td>
+                                    <td align="right">Total</td>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr v-for="(product, sl) in cart">
                                     <td>{{ sl + 1 }}</td>
-                                    <td>{{ product.Product_Name }}</td>
-                                    <td>{{ product.PurchaseDetails_TotalQuantity }}</td>
-                                    <td>{{ product.Unit_Name }}</td>
-                                    <td>{{ product.PurchaseDetails_Rate }}</td>
+                                    <td style="text-align:left;" :style="{lineHeight: product.isFree == 'yes' ? '1' : ''}">
+                                        {{ product.Product_Name }} - {{product.Product_Code}}
+                                         <span v-if="product.isFree == 'yes'">
+                                            <br>
+                                            <i style="font-weight: 700;font-size: 11px;">Free</i>
+                                         </span>
+                                    </td>
+                                    <td>{{ product.PurchaseDetails_TotalQuantity }} {{ product.Unit_Name }}</td>
+                                    <td align="right">{{ product.PurchaseDetails_Rate }}</td>
                                     <td align="right">{{ product.PurchaseDetails_TotalAmount }}</td>
                                 </tr>
                             </tbody>
