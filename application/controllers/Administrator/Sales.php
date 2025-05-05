@@ -605,11 +605,11 @@ class Sales extends CI_Controller
             }
 
             $customerInfo = $this->db->query("select * from tbl_customer where Customer_SlNo = ?", $data->invoice->SalseCustomer_IDNo)->row();
-            if ($customerInfo->Customer_Type == 'G') {
+            if (empty($customerInfo)) {
                 $customerPayment = array(
                     'CPayment_date' => $data->salesReturn->returnDate,
                     'CPayment_invoice' => $data->invoice->SaleMaster_InvoiceNo,
-                    'CPayment_customerID' => $data->invoice->SalseCustomer_IDNo,
+                    'CPayment_customerID' => NULL,
                     'CPayment_TransactionType' => 'CP',
                     'CPayment_amount' => $totalReturnAmount,
                     'CPayment_Paymentby' => 'cash',
@@ -691,23 +691,22 @@ class Sales extends CI_Controller
             }
 
             $customerInfo = $this->db->query("select * from tbl_customer where Customer_SlNo = ?", $data->invoice->SalseCustomer_IDNo)->row();
-            if ($customerInfo->Customer_Type == 'G') {
+            if (empty($customerInfo)) {
                 $this->db->query("
                     delete from tbl_customer_payment 
                     where CPayment_invoice = ? 
-                    and CPayment_customerID = ?
+                    and CPayment_customerID is null
                     and CPayment_amount = ?
                     limit 1
                 ", [
                     $data->invoice->SaleMaster_InvoiceNo,
-                    $data->invoice->SalseCustomer_IDNo,
                     $oldReturn->SaleReturn_ReturnAmount
                 ]);
 
                 $customerPayment = array(
                     'CPayment_date' => $data->salesReturn->returnDate,
                     'CPayment_invoice' => $data->invoice->SaleMaster_InvoiceNo,
-                    'CPayment_customerID' => $data->invoice->SalseCustomer_IDNo,
+                    'CPayment_customerID' => NULL,
                     'CPayment_TransactionType' => 'CP',
                     'CPayment_amount' => $totalReturnAmount,
                     'CPayment_Paymentby' => 'cash',

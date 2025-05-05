@@ -482,7 +482,7 @@ class Reports extends CI_Controller {
         $this->load->view('Administrator/index', $data);
 	}
 	
-	 public function cashStatment() {
+	public function cashStatment() {
         $access = $this->mt->userAccess();
         if(!$access){
             redirect(base_url());
@@ -492,62 +492,14 @@ class Reports extends CI_Controller {
         $this->load->view('Administrator/index', $data);
     }
 	
-    public function cashStatmentList() {
-        $brunch = $this->session->userdata('BRANCHid');
-        $startdate = $this->input->post('startdate');
-        $enddate = $this->input->post('enddate');
-		
-		$date = array(
-        'startdate'  => $this->input->post('startdate'),
-        'enddate'     => $this->input->post('enddate'),
-		);
-		$this->session->set_userdata($date);
-	
-        $datas["saleRecords"] = $this->Sale_model->full_sale_statment($startdate, $enddate);
-        $datas["purchaseRecords"] = $this->Purchase_model->full_purchase_statment($startdate, $enddate);
-        $datas["expenseRecords"] = $this->Billing_model->cash_transaction($startdate, $enddate);
-        $this->load->view('Administrator/reports/cashStatementList', $datas);
-
-    }
-
-    public function cashStatmentListPrint(){
-        $data['title'] = "Balance Sheet Print";
-		$brunch = $this->session->userdata('BRANCHid');
-        $startdate = $this->session->userdata('startdate');
-        $enddate = $this->session->userdata('enddate');
-		
-        $datas["saleRecords"] = $this->Sale_model->full_sale_statment($startdate, $enddate);
-        $datas["purchaseRecords"] = $this->Purchase_model->full_purchase_statment($startdate, $enddate);
-        $datas["expenseRecords"] = $this->Billing_model->cash_transaction($startdate, $enddate);
-        $this->load->view('Administrator/reports/cashStatementPrint', $datas);
-    }
-	
-    public function balance_sheet_report_branch_wise($id = null) {
-        $brunch = $id;
-        
-        if($brunch == 'All'):
-            $sqlSales = $this->db->query("SELECT tbl_salesmaster.*, tbl_salereturn.SaleMaster_InvoiceNo as saleReturnInv, tbl_salereturn.SaleReturn_ReturnAmount FROM tbl_salesmaster left join tbl_salereturn on tbl_salereturn.SaleMaster_InvoiceNo = tbl_salesmaster.SaleMaster_InvoiceNo");
-            $sqlPurchase = $this->db->query("SELECT tbl_purchasemaster.*, tbl_purchasereturn.PurchaseMaster_InvoiceNo as purReturnInv, tbl_purchasereturn.PurchaseReturn_ReturnAmount FROM tbl_purchasemaster left join tbl_purchasereturn on tbl_purchasereturn.PurchaseMaster_InvoiceNo = tbl_purchasemaster.PurchaseMaster_InvoiceNo");
-
-            $sqlExpense = $this->db->query("SELECT * FROM tbl_cashtransaction");
-            $customerPayment = $this->db->query("SELECT * FROM tbl_customer_payment");
-            $supplierPayment = $this->db->query("SELECT * FROM tbl_supplier_payment");
-        else:
-            $sqlSales = $this->db->query("SELECT tbl_salesmaster.*, tbl_salereturn.SaleMaster_InvoiceNo as saleReturnInv, tbl_salereturn.SaleReturn_ReturnAmount FROM tbl_salesmaster left join tbl_salereturn on tbl_salereturn.SaleMaster_InvoiceNo = tbl_salesmaster.SaleMaster_InvoiceNo where tbl_salesmaster.SaleMaster_branchid = '$brunch'");
-            $sqlPurchase = $this->db->query("SELECT tbl_purchasemaster.*, tbl_purchasereturn.PurchaseMaster_InvoiceNo as purReturnInv, tbl_purchasereturn.PurchaseReturn_ReturnAmount FROM tbl_purchasemaster left join tbl_purchasereturn on tbl_purchasereturn.PurchaseMaster_InvoiceNo = tbl_purchasemaster.PurchaseMaster_InvoiceNo where tbl_purchasemaster.PurchaseMaster_BranchID = '$brunch'");
-
-            $sqlExpense = $this->db->query("SELECT * FROM tbl_cashtransaction where Tr_branchid = '$brunch'");
-            $customerPayment = $this->db->query("SELECT * FROM tbl_customer_payment where CPayment_brunchid = '$brunch'");
-            $supplierPayment = $this->db->query("SELECT * FROM tbl_supplier_payment where SPayment_brunchid = '$brunch'");
-        endif;
-        
-        $datas["saleRecords"] = $sqlSales->result();
-        $datas["purchaseRecords"] = $sqlPurchase->result();
-        $datas["expenseRecords"] = $sqlExpense->result();
-        $datas["customerPayment"] = $customerPayment->result();
-        $datas["supplierPayment"] = $supplierPayment->result();
-
-        $this->load->view('Administrator/reports/balanceSheetReportBranchWise', $datas);
+    public function specialReport() {
+        $access = $this->mt->userAccess();
+        if(!$access){
+            redirect(base_url());
+        }
+        $datas['title'] = "Cash Statement"; 
+        $data['content'] = $this->load->view('Administrator/reports/special', $datas, TRUE);
+        $this->load->view('Administrator/index', $data);
     }
 
 

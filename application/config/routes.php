@@ -332,6 +332,7 @@ $route['cashStatment'] = 'Administrator/Reports/cashStatment';
 $route['cashStatmentList'] = 'Administrator/Reports/cashStatmentList';
 $route['cashStatmentListPrint'] = 'Administrator/Reports/cashStatmentListPrint';
 $route['day_book'] = 'Administrator/Reports/dayBook';
+$route['special_report'] = 'Administrator/Reports/specialReport';
 
 $route['BalanceSheet'] = 'Administrator/Reports/balanceSheet';
 $route['balance_sheet'] = 'Administrator/Reports/balance_sheet';
