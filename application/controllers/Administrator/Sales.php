@@ -40,6 +40,7 @@ class Sales extends CI_Controller
     {
         $res = ['success' => false, 'message' => ''];
         try {
+            $this->db->trans_begin();
             $data = json_decode($this->input->raw_input_stream);
 
             foreach ($data->cart as $key => $item) {
@@ -158,6 +159,22 @@ class Sales extends CI_Controller
                     and branch_id = ?
                 ", [$cartProduct->quantity, $cartProduct->productId, $this->session->userdata('BRANCHid')]);
             }
+
+            if (count($data->banks) > 0) {
+                foreach ($data->banks as $key => $item) {
+                    $bank = array(
+                        'sale_id'    => $salesId,
+                        'bank_id'    => $item->bank_id,
+                        'last_digit' => $item->last_digit,
+                        'amount'     => $item->amount,
+                        'AddBy'      => $this->session->userdata("FullName"),
+                        'AddTime'    => date('Y-m-d H:i:s'),
+                        'branchId'   => $this->session->userdata('BRANCHid')
+                    );
+                    $this->db->insert('tbl_sales_bank', $bank);
+                }
+            }
+
             // $currentDue = $data->sales->previousDue + ($data->sales->total - $data->sales->paid);
             //Send sms
             // $customerInfo = $this->db->query("select * from tbl_customer where Customer_SlNo = ?", $customerId)->row();
@@ -167,9 +184,11 @@ class Sales extends CI_Controller
             // $message = "Dear {$sendToName},\nYour bill is {$currency} {$data->sales->total}. Received {$currency} {$data->sales->paid} and current due is {$currency} {$currentDue} for invoice {$invoice}";
             // $recipient = $customerInfo->Customer_Mobile;
             // $this->sms->sendSms($recipient, $message);
+            $this->db->trans_commit();
 
             $res = ['success' => true, 'message' => 'Sales Success', 'salesId' => $salesId];
         } catch (Exception $ex) {
+            $this->db->trans_rollback();
             $res = ['success' => false, 'message' => $ex->getMessage()];
         }
 
@@ -252,7 +271,7 @@ class Sales extends CI_Controller
         if (isset($data->employeeId) && $data->employeeId != '') {
             $clauses .= " and sm.employee_id = '$data->employeeId'";
         }
-        
+
         if (isset($data->saleId) && $data->saleId != '') {
             $clauses .= " and sm.SaleMaster_SlNo = '$data->saleId'";
         }
@@ -295,6 +314,15 @@ class Sales extends CI_Controller
                 where sd.SaleMaster_IDNo = ?
                 and sd.Status != 'd'
             ", $sale->SaleMaster_SlNo)->result();
+
+            $sale->banks = $this->db
+                ->query("select sb.id, sb.sale_id, sb.bank_id, ba.account_number,
+                    ba.bank_name,
+                    sb.last_digit,
+                    sb.amount
+                    from tbl_sales_bank sb
+                    left join tbl_bank_accounts ba on ba.account_id = sb.bank_id
+                    where sb.sale_id = ?", $sale->SaleMaster_SlNo)->result();
         }
 
         echo json_encode($sales);
@@ -354,7 +382,18 @@ class Sales extends CI_Controller
             ", $data->salesId)->result();
 
             $res['saleDetails'] = $saleDetails;
+
+            $res['banks'] = $this->db
+                ->query("select sb.id, sb.sale_id, sb.bank_id, ba.account_number,
+                    ba.bank_name,
+                    sb.last_digit,
+                    sb.amount
+                    from tbl_sales_bank sb
+                    left join tbl_bank_accounts ba on ba.account_id = sb.bank_id
+                    where sb.sale_id = ?", $data->salesId)->result();
         }
+
+
         $sales = $this->db->query("
             select 
             concat(sm.SaleMaster_InvoiceNo, ' - ', ifnull(c.Customer_Name, sm.customerName)) as invoice_text,
@@ -393,6 +432,7 @@ class Sales extends CI_Controller
     {
         $res = ['success' => false, 'message' => ''];
         try {
+            $this->db->trans_begin();
             $data = json_decode($this->input->raw_input_stream);
             $salesId = $data->sales->salesId;
 
@@ -516,8 +556,29 @@ class Sales extends CI_Controller
                 ", [$cartProduct->quantity, $cartProduct->productId, $this->session->userdata('BRANCHid')]);
             }
 
+            //old bank list delete
+            $this->db->where('sale_id', $salesId)->delete('tbl_sales_bank');
+            if (count($data->banks) > 0) {
+                foreach ($data->banks as $key => $item) {
+                    $bank = array(
+                        'sale_id'    => $salesId,
+                        'bank_id'    => $item->bank_id,
+                        'last_digit' => $item->last_digit,
+                        'amount'     => $item->amount,
+                        'AddBy'      => $this->session->userdata("FullName"),
+                        'AddTime'    => date('Y-m-d H:i:s'),
+                        'UpdateBy'   => $this->session->userdata("FullName"),
+                        'UpdateTime' => date('Y-m-d H:i:s'),
+                        'branchId'   => $this->session->userdata('BRANCHid')
+                    );
+                    $this->db->insert('tbl_sales_bank', $bank);
+                }
+            }
+
+            $this->db->trans_commit();
             $res = ['success' => true, 'message' => 'Sales Updated', 'salesId' => $salesId];
         } catch (Exception $ex) {
+            $this->db->trans_rollback();
             $res = ['success' => false, 'message' => $ex->getMessage()];
         }
 
@@ -1316,7 +1377,7 @@ class Sales extends CI_Controller
         $data['content'] = $this->load->view('Administrator/sales/sales_record', $data, TRUE);
         $this->load->view('Administrator/index', $data);
     }
-    
+
     public function saleInvoicePrint($saleId)
     {
         $data['title'] = "Sales Invoice";

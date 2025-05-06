@@ -363,17 +363,18 @@
 				fd.append('image', this.selectedFile);
 				fd.append('data', JSON.stringify(this.customer));
 
-				axios.post(url, fd, {
-					onUploadProgress: upe => {
-						let progress = Math.round(upe.loaded / upe.total * 100);
-					}
-				}).then(res => {
+				axios.post(url, fd).then(res => {
 					let r = res.data;
-					alert(r.message);
 					if (r.success) {
+						alert(r.message);
 						this.resetForm();
 						this.customer.Customer_Code = r.customerCode;
 						this.getCustomers();
+					} else {
+						if (confirm(r.message)) {
+							this.customer.confirmation = 'yes';
+							this.saveCustomer();
+						}
 					}
 				})
 			},

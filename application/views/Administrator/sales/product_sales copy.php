@@ -358,9 +358,7 @@
 										<td>
 											<div class="form-group">
 												<label class="col-xs-6 control-label">Cash</label>
-											</div>
-											<div class="col-xs-6">
-												<input type="number" min="0" step="any" id="cashPaid" class="form-control" v-model="sales.cashPaid" v-on:input="calculateTotal" />
+												<label class="col-xs-6 control-label">Bank</label>
 											</div>
 										</td>
 									</tr>
@@ -368,16 +366,16 @@
 										<td>
 											<div class="form-group">
 												<div class="col-xs-6">
-													<button type="button" @click="showModal" style="width: 100%;">Multiple Bank</button>
+													<input type="number" id="cashPaid" class="form-control" v-model="sales.cashPaid" v-on:input="calculateTotal" />
 												</div>
 												<div class="col-xs-6">
-													<input type="number" min="0" step="any" id="bankPaid" class="form-control" v-model="sales.bankPaid" readonly />
+													<input type="number" id="bankPaid" class="form-control" v-model="sales.bankPaid" v-on:input="calculateTotal" />
 												</div>
 											</div>
 										</td>
 									</tr>
 
-									<!-- <tr v-if="sales.bankPaid > 0" style="display:none;" :style="{display: sales.bankPaid > 0 ? '' : 'none'}">
+									<tr v-if="sales.bankPaid > 0" style="display:none;" :style="{display: sales.bankPaid > 0 ? '' : 'none'}">
 										<td>
 											<div class="form-group">
 												<label class="col-xs-12 control-label">Bank Account</label>
@@ -386,7 +384,7 @@
 												</div>
 											</div>
 										</td>
-									</tr> -->
+									</tr>
 
 									<tr>
 										<td>
@@ -435,56 +433,17 @@
 	</div>
 
 	<!-- modal for multiple bank account -->
-	<div class="modal fade bankAccount" tabindex="-1" role="dialog">
-		<div class="modal-dialog modal-md" role="document">
-			<div class="modal-content" style="border-radius: 10px;">
-				<div class="modal-header" style="display: flex; align-items: center; justify-content: space-between;background: #66853e;border-top-left-radius: 10px;border-top-right-radius: 10px;">
-					<h5 class="modal-title" style="width:90%;margin: 0;color: #ffffff;">Multiple Bank Account List</h5>
-					<button type="button" style="width: 10%; margin: 0px; display: flex; align-items: center; justify-content: end;" class="close" data-dismiss="modal" aria-label="Close">
-						<span aria-hidden="true" style="margin: 0;font-size: 20px;">X</span>
+	<div class="modal bankAccount" tabindex="-1" role="dialog">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Modal title</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
 					</button>
 				</div>
 				<div class="modal-body">
-					<form @submit.prevent="bankAddToCart">
-						<div class="row">
-							<div class="col-xs-6">
-								<v-select :options="banks" v-model="selectedBank" label="display_name" @input="onChangeBankAccount"></v-select>
-							</div>
-							<div class="col-xs-2">
-								<input type="text" class="form-control" id="last_digit" v-model="selectedBank.last_digit" @input="goToAmount" placeholder="Last 4 digit" />
-							</div>
-							<div class="col-xs-3">
-								<input type="number" step="any" min="0" class="form-control" id="bankAmount" v-model="selectedBank.amount" placeholder="Amount" />
-							</div>
-							<div class="col-xs-1 no-padding-left">
-								<button type="submit">Add</button>
-							</div>
-						</div>
-					</form>
-					<table class="table table-bordered table-striped">
-						<thead>
-							<tr>
-								<th>Sl</th>
-								<th>Bank Name</th>
-								<th>Account Number</th>
-								<th>Last Digit</th>
-								<th>Amount</th>
-								<th>Action</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr v-for="(item, index) in bankCart" :key="index">
-								<td v-text="index + 1"></td>
-								<td v-text="item.bank_name"></td>
-								<td v-text="item.account_number"></td>
-								<td v-text="item.last_digit"></td>
-								<td v-text="item.amount"></td>
-								<td>
-									<span style="cursor: pointer;color: red;" @click="removeBankCart(index)">X</span>
-								</td>
-							</tr>
-						</tbody>
-					</table>
+					<p>Modal body text goes here.</p>
 				</div>
 			</div>
 		</div>
@@ -533,18 +492,12 @@
 				discountPercent: 0,
 				isFree: 'no',
 				cart: [],
-				bankCart: [],
 				categories: [],
 				selectedCategory: null,
 				employees: [],
 				selectedEmployee: null,
 				banks: [],
-				selectedBank: {
-					account_id: '',
-					display_name: 'select bank',
-					last_digit: '',
-					amount: ''
-				},
+				selectedBank: null,
 				branches: [],
 				selectedBranch: {
 					brunch_id: "<?php echo $this->session->userdata('BRANCHid'); ?>",
@@ -605,6 +558,9 @@
 						return item;
 					});
 				})
+			},
+			showModal(){
+				$(".bankAccount").modal('show');
 			},
 			getCategory() {
 				axios.get('/get_categories').then(res => {
@@ -982,7 +938,7 @@
 				}
 				this.sales.total = ((parseFloat(this.sales.subTotal) + parseFloat(this.sales.vat) + parseFloat(this.sales.transportCost)) - parseFloat(+this.sales.discount + +this.sales.pointAmount)).toFixed(2);
 
-				if (event.target.id == 'cashPaid' || this.bankCart.length > 0) {
+				if (event.target.id == 'cashPaid' || event.target.id == 'bankPaid') {
 					this.sales.paid = parseFloat(parseFloat(this.sales.cashPaid) + parseFloat(this.sales.bankPaid)).toFixed(2);
 					if (parseFloat(this.sales.paid) > parseFloat(this.sales.total)) {
 						this.sales.returnAmount = parseFloat(this.sales.paid - this.sales.total).toFixed(2);
@@ -1000,69 +956,6 @@
 				}
 
 			},
-
-			showModal() {
-				$(".bankAccount").modal('show');
-			},
-
-			onChangeBankAccount() {
-				if (this.selectedBank == null) {
-					this.selectedBank = {
-						account_id: '',
-						display_name: 'select bank',
-						last_digit: '',
-						amount: ''
-					}
-					return;
-				}
-
-				if (this.selectedBank.account_id != '') {
-					document.querySelector('#last_digit').select();
-				}
-			},
-			
-			goToAmount(){
-				if(this.selectedBank.last_digit.length > 3){
-					document.querySelector('#bankAmount').select();
-				}
-			},
-
-			bankAddToCart() {
-				if (this.selectedBank.account_id == '') {
-					alert("Please select bank account");
-					return;
-				}
-				let bank = {
-					bank_id: this.selectedBank.account_id,
-					bank_name: this.selectedBank.bank_name,
-					account_number: this.selectedBank.account_number,
-					last_digit: this.selectedBank.last_digit,
-					amount: this.selectedBank.amount
-				}
-				let findInd = this.bankCart.findIndex(item => item.bank_id == bank.bank_id);
-				if (findInd > -1) {
-					this.bankCart.splice(findInd, 1);
-				}
-				this.bankCart.push(bank);
-
-				this.sales.bankPaid = this.bankCart.reduce((pr, cu) => {
-					return pr + parseFloat(cu.amount)
-				}, 0).toFixed(2);
-				this.calculateTotal();
-				this.selectedBank = {
-					account_id: '',
-					display_name: 'select bank',
-					last_digit: '',
-					amount: ''
-				}
-			},
-			removeBankCart(sl) {
-				this.bankCart.splice(sl, 1);
-				this.sales.bankPaid = this.bankCart.reduce((pr, cu) => {
-					return pr + parseFloat(cu.amount)
-				}, 0).toFixed(2);
-				this.calculateTotal();
-			},
 			async saveSales() {
 				if (this.selectedCustomer == null) {
 					alert('Select Customer');
@@ -1076,6 +969,14 @@
 					alert('Due sale does not accept on general customer');
 					return;
 				}
+
+				// if (this.sales.bankPaid > 0) {
+				// 	if (this.selectedBank == null) {
+				// 		alert('Select Bank');
+				// 		return;
+				// 	}
+				// 	this.sales.bank_id = this.selectedBank.account_id
+				// }
 
 				await this.getCustomerDue();
 				let url = "/add_sales";
@@ -1095,8 +996,7 @@
 				let data = {
 					sales: this.sales,
 					cart: this.cart,
-					customer: this.selectedCustomer,
-					banks: this.bankCart
+					customer: this.selectedCustomer
 				}
 
 				this.saleOnProgress = true;

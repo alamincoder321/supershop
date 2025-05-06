@@ -76,26 +76,18 @@ class Supplier extends CI_Controller {
             
             $supplier = (array)$supplierObj;
             unset($supplier['Supplier_SlNo']);
+            unset($supplier['confirmation']);
             $supplier["Supplier_brinchid"] = $this->session->userdata("BRANCHid");
 
             $supplierId = null;
             $res_message = "";
 
             $supplierMobileCount = $this->db->query("select * from tbl_supplier where Supplier_Mobile = ? and Supplier_brinchid = ?", [$supplierObj->Supplier_Mobile, $this->session->userdata("BRANCHid")]);
-            if($supplierMobileCount->num_rows() > 0){
-                $duplicateSupplier = $supplierMobileCount->row();
-
-                unset($supplier['Supplier_Code']);
-                $supplier["UpdateBy"]   = $this->session->userdata("FullName");
-                $supplier["UpdateTime"] = date("Y-m-d H:i:s");
-                $supplier["Status"]     = 'a';
-                $this->db->where('Supplier_SlNo', $duplicateSupplier->Supplier_SlNo)->update('tbl_supplier', $supplier);
-                
-                $supplierId = $duplicateSupplier->Supplier_SlNo;
-                $supplierObj->Supplier_Code = $duplicateSupplier->Supplier_Code;
-                $res_message = 'Supplier updated successfully';
+            if($supplierMobileCount->num_rows() > 0 && !isset($supplierObj->confirmation)){
+                $res = ['success'=>false, 'message'=> 'Mobile number already exist. Do you again use this number ?'];
+                echo json_encode($res);
+                exit;
             }else{
-
                 $supplier["AddBy"] = $this->session->userdata("FullName");
                 $supplier["AddTime"] = date("Y-m-d H:i:s");
                 $this->db->insert('tbl_supplier', $supplier);
@@ -112,7 +104,6 @@ class Supplier extends CI_Controller {
                 $config['file_name'] = $imageName;
                 $this->load->library('upload', $config);
                 $this->upload->do_upload('image');
-                //$imageName = $this->upload->data('file_ext'); /*for geting uploaded image name*/
 
                 $config['image_library'] = 'gd2';
                 $config['source_image'] = './uploads/suppliers/'. $imageName ; 
@@ -142,12 +133,12 @@ class Supplier extends CI_Controller {
         $res = ['success'=>false, 'message'=>''];
         try{
             $supplierObj = json_decode($this->input->post('data'));
-            $supplierMobileCount = $this->db->query("select * from tbl_supplier where Supplier_Mobile = ? and Supplier_SlNo != ? and Supplier_brinchid = ?", [$supplierObj->Supplier_Mobile, $supplierObj->Supplier_SlNo, $this->session->userdata("BRANCHid")])->num_rows();
-            if($supplierMobileCount > 0){
-                $res = ['success'=>false, 'message'=>'Mobile number already exists'];
-                echo Json_encode($res);
-                exit;
-            }
+            // $supplierMobileCount = $this->db->query("select * from tbl_supplier where Supplier_Mobile = ? and Supplier_SlNo != ? and Supplier_brinchid = ?", [$supplierObj->Supplier_Mobile, $supplierObj->Supplier_SlNo, $this->session->userdata("BRANCHid")])->num_rows();
+            // if($supplierMobileCount > 0){
+            //     $res = ['success'=>false, 'message'=>'Mobile number already exists'];
+            //     echo Json_encode($res);
+            //     exit;
+            // }
             $supplier = (array)$supplierObj;
             $supplierId = $supplierObj->Supplier_SlNo;
 

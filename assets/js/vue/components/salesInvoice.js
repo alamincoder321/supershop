@@ -74,10 +74,10 @@ const salesInvoice = Vue.component('sales-invoice', {
                                     <td style="font-weight:700;">Bank Name</td>
                                     <td style="font-weight:700;">Amount</td>
                                 </tr>
-                                <tr>
-                                    <td>1</td>
-                                    <td>{{sales.bank_name}} - {{sales.account_number}} - {{sales.account_name}}</td>
-                                    <td>{{sales.SaleMaster_bankPaid}}</td>
+                                <tr v-for="(bank, sl) in banks">
+                                    <td>{{sl}}</td>
+                                    <td>{{bank.bank_name}} - {{bank.account_number}}</td>
+                                    <td>{{bank.amount}}</td>
                                 </tr>
                             </table>
                         </div>
@@ -139,6 +139,7 @@ const salesInvoice = Vue.component('sales-invoice', {
                 AddBy: null
             },
             cart: [],
+            banks: [],
             style: null,
             companyProfile: null,
             currentBranch: null
@@ -158,6 +159,7 @@ const salesInvoice = Vue.component('sales-invoice', {
         getSales() {
             axios.post('/get_sales', { salesId: this.sales_id }).then(res => {
                 this.sales = res.data.sales[0];
+                this.banks = res.data.banks;
                 this.cart = res.data.saleDetails;
             })
         },

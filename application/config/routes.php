@@ -242,6 +242,7 @@ $route['access/(:any)'] = 'Administrator/User_management/user_access/$1';
 $route['get_user_access'] = 'Administrator/User_management/getUserAccess';
 $route['profile'] = 'Administrator/User_management/profile';
 $route['profile_update'] = 'Administrator/User_management/profileUpdate';
+$route['password_change'] = 'Administrator/User_management/password_change';
 $route['define_access/(:any)'] = 'Administrator/User_management/define_access/$1';
 $route['add_user_access'] = 'Administrator/User_management/addUserAccess';
 $route['user_activity'] = 'Administrator/User_management/userActivity';

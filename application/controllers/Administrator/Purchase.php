@@ -462,9 +462,10 @@ class Purchase extends CI_Controller
                 unset($supplier['Supplier_SlNo']);
                 unset($supplier['display_name']);
 
-                $mobile_count = $this->db->query("select * from tbl_supplier where Supplier_Mobile = ? and Supplier_brinchid = ?", [$data->supplier->Supplier_Mobile, $this->session->userdata("BRANCHid")])->row();
+                // $mobile_count = $this->db->query("select * from tbl_supplier where Supplier_Mobile = ? and Supplier_brinchid = ?", [$data->supplier->Supplier_Mobile, $this->session->userdata("BRANCHid")])->row();
 
-                if ($data->supplier->Supplier_Type == 'N' && empty($mobile_count)) {
+                // if ($data->supplier->Supplier_Type == 'N' && empty($mobile_count)) {
+                if ($data->supplier->Supplier_Type == 'N') {
                     $supplier['Supplier_Code']     = $this->mt->generateSupplierCode();
                     $supplier['Status']            = 'a';
                     $supplier['AddBy']             = $this->session->userdata("FullName");
@@ -578,9 +579,10 @@ class Purchase extends CI_Controller
                 unset($supplier['Supplier_SlNo']);
                 unset($supplier['display_name']);
 
-                $mobile_count = $this->db->query("select * from tbl_supplier where Supplier_Mobile = ? and Supplier_brinchid = ?", [$data->supplier->Supplier_Mobile, $this->session->userdata("BRANCHid")])->row();
+                // $mobile_count = $this->db->query("select * from tbl_supplier where Supplier_Mobile = ? and Supplier_brinchid = ?", [$data->supplier->Supplier_Mobile, $this->session->userdata("BRANCHid")])->row();
 
-                if ($data->supplier->Supplier_Type == 'N' && empty($mobile_count)) {
+                // if ($data->supplier->Supplier_Type == 'N' && empty($mobile_count)) {
+                if ($data->supplier->Supplier_Type == 'N') {
                     $supplier['Supplier_Code']     = $this->mt->generateSupplierCode();
                     $supplier['Status']            = 'a';
                     $supplier['AddBy']             = $this->session->userdata("FullName");
