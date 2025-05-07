@@ -116,7 +116,7 @@ class Sales extends CI_Controller
                 $sales['SalseCustomer_IDNo'] = $customerId;
                 if ($data->customer->is_member == 'yes') {
                     $old_point = $this->db->query("select * from tbl_customer where Customer_SlNo = ?", $customerId)->row()->point;
-                    $pointTotal = $old_point + floor($data->sales->total / $data->customer->amount);
+                    $pointTotal = $old_point + ($data->customer->amount > 0 ? floor($data->sales->total / $data->customer->amount) : 0);
                     $this->db
                         ->where('Customer_SlNo', $customerId)
                         ->update('tbl_customer', [
@@ -125,7 +125,7 @@ class Sales extends CI_Controller
                             'point' => ($pointTotal - $data->sales->pointAmount)
                         ]);
 
-                    $sales['point'] = floor($data->sales->total / $data->customer->amount);
+                    $sales['point'] = ($data->customer->amount > 0 ? floor($data->sales->total / $data->customer->amount) : 0);
                 }
             }
 
@@ -854,6 +854,10 @@ class Sales extends CI_Controller
         $clauses = "";
         if ((isset($data->fromDate) && $data->fromDate != '') && (isset($data->toDate) && $data->toDate != '')) {
             $clauses .= " and sr.SaleReturn_ReturnDate between '$data->fromDate' and '$data->toDate'";
+        }
+
+        if (isset($data->userFullName) && $data->userFullName != '') {
+            $clauses .= " and sr.AddBy = '$data->userFullName'";
         }
 
         if (isset($data->id) && $data->id != '') {

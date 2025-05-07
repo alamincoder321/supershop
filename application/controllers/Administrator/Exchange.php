@@ -117,6 +117,10 @@ class Exchange extends CI_Controller
             $clauses .= " and sm.SalseCustomer_IDNo = '$data->customerId'";
         }
 
+        if (isset($data->userFullName) && $data->userFullName != '') {
+            $clauses .= " and ex.AddBy = '$data->userFullName'";
+        }
+
         $exchanges = $this->db
             ->query("select ex.*, 
                 c.Customer_Name, 
