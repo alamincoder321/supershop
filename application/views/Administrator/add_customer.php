@@ -411,15 +411,23 @@
 				})
 			},
 			resetForm() {
-				let keys = Object.keys(this.customer);
-				keys = keys.filter(key => key != "Customer_Type");
-				keys.forEach(key => {
-					if (typeof(this.customer[key]) == 'string') {
-						this.customer[key] = '';
-					} else if (typeof(this.customer[key]) == 'number') {
-						this.customer[key] = 0;
-					}
-				})
+				this.customer = {
+					Customer_SlNo: 0,
+					Customer_Code: '',
+					Customer_Name: '',
+					Customer_Type: 'retail',
+					Customer_Phone: '',
+					Customer_Mobile: '',
+					Customer_Email: '',
+					Customer_OfficePhone: '',
+					Customer_Address: '',
+					owner_name: '',
+					area_ID: '',
+					Customer_Credit_Limit: 0,
+					previous_due: 0,
+					is_member: 'no',
+					amount: 0,
+				}
 				this.imageUrl = '';
 				this.selectedFile = null;
 			}
