@@ -242,6 +242,9 @@
             $total_discount = array_reduce($sales, function($prev, $curr){ 
                 return $prev + $curr->SaleMaster_TotalDiscountAmount;
             });
+            $total_point = array_reduce($sales, function($prev, $curr){ 
+                return $prev + $curr->pointAmount;
+            });
 
             $total_vat = array_reduce($sales, function($prev, $curr){ 
                 return $prev + $curr->SaleMaster_TaxAmount;
@@ -334,7 +337,8 @@
                 $profits + $total_transport_cost + 
                 $other_income_expense->income + $total_vat
             ) - (
-                $total_discount + 
+                $total_discount +
+                $total_point + 
                 $other_income_expense->returned_amount + 
                 $other_income_expense->damaged_amount + 
                 $other_income_expense->expense + 

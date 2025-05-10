@@ -173,6 +173,12 @@
 						</tr>
 
 						<tr>
+							<td colspan="5" style="text-align:right;">Total Point (-)</td>
+							<td colspan="2"></td>
+							<td style="text-align:right;">{{ totalPoint = reportData.reduce((prev, cur) => { return prev + parseFloat(cur.pointAmount) }, 0).toFixed(2) }}</td>
+						</tr>
+
+						<tr>
 							<td colspan="5" style="text-align:right;">Total Returned Value (-)</td>
 							<td colspan="2"></td>
 							<td style="text-align:right;">{{ otherIncomeExpense.returned_amount | decimal }}</td>
@@ -219,7 +225,7 @@
 							<td colspan="2"></td>
 							<td style="text-align:right;">
 								{{ ((parseFloat(totalProfit) + parseFloat(totalVat) + parseFloat(otherIncome)) - 
-									(parseFloat(totalDiscount) + parseFloat(otherIncomeExpense.returned_amount) + parseFloat(otherIncomeExpense.damaged_amount) + parseFloat(otherIncomeExpense.expense) + parseFloat(otherIncomeExpense.employee_payment) + parseFloat(otherIncomeExpense.profit_distribute) + parseFloat(otherIncomeExpense.loan_interest) + parseFloat(otherIncomeExpense.assets_sales_profit_loss))).toFixed(2) }}
+									(parseFloat(totalDiscount) + parseFloat(totalPoint) + parseFloat(otherIncomeExpense.returned_amount) + parseFloat(otherIncomeExpense.damaged_amount) + parseFloat(otherIncomeExpense.expense) + parseFloat(otherIncomeExpense.employee_payment) + parseFloat(otherIncomeExpense.profit_distribute) + parseFloat(otherIncomeExpense.loan_interest) + parseFloat(otherIncomeExpense.assets_sales_profit_loss))).toFixed(2) }}
 							</td>
 						</tr>
 					</tfoot>
