@@ -574,7 +574,8 @@
 					Product_Purchase_Rate: '',
 					Product_SellingPrice: 0,
 					vat: 0,
-					total: 0
+					total: 0,
+					warranty: '',
 				},
 				productPurchaseRate: '',
 				productStockText: '',
@@ -774,17 +775,18 @@
 				this.selectedProduct.total = (parseFloat(this.selectedProduct.quantity) * parseFloat(this.selectedProduct.Product_SellingPrice)).toFixed(2);
 			},
 			onSalesTypeChange() {
-				this.selectedCustomer = {
-					Customer_SlNo: '',
-					Customer_Code: '',
-					Customer_Name: 'General Customer',
-					display_name: 'General Customer',
-					Customer_Mobile: '',
-					Customer_Address: '',
-					Customer_Type: 'G',
-					amount: 0,
-					point: 0,
-				}
+				if (this.selectedCustomer)
+					this.selectedCustomer = {
+						Customer_SlNo: '',
+						Customer_Code: '',
+						Customer_Name: 'General Customer',
+						display_name: 'General Customer',
+						Customer_Mobile: '',
+						Customer_Address: '',
+						Customer_Type: 'G',
+						amount: 0,
+						point: 0,
+					}
 				this.getCustomers();
 
 				this.clearProduct();
@@ -1018,9 +1020,9 @@
 					document.querySelector('#last_digit').select();
 				}
 			},
-
-			goToAmount() {
-				if (this.selectedBank.last_digit.length > 3) {
+			
+			goToAmount(){
+				if(this.selectedBank.last_digit.length > 3){
 					document.querySelector('#bankAmount').select();
 				}
 			},

@@ -10,7 +10,7 @@ $db['default'] = array(
 
 	'username' => 'root',
 	'password' => '',
-	'database' => 'super_shop',
+	'database' => 'ajmaqmft_soft',
 
 	'dbdriver' => 'mysqli',
 	'dbprefix' => '',

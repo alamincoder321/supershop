@@ -346,12 +346,27 @@ if ($module == 'dashboard' or $module == '') { ?>
 				<?php endif; ?>
 
 
+				<!-- <?php if ($this->session->userdata('BRANCHid') == 1 && (isset($CheckSuperAdmin) || isset($CheckAdmin))) : ?>
+					<div class="col-md-2 col-xs-6 custom-padding ">
+						<div class="col-md-12 section20">
+							<a href="<?php echo base_url(); ?>branch">
+								<div class="logo">
+									<i class="menu-icon fa fa-bank"></i>
+								</div>
+								<div class="textModule">
+									Branch Entry
+								</div>
+							</a>
+						</div>
+					</div>
+				<?php endif; ?> -->
+				
 				<?php if ($this->session->userdata('BRANCHid') == 1 && (isset($CheckSuperAdmin) || isset($CheckAdmin))) : ?>
 					<div class="col-md-2 col-xs-6 custom-padding ">
 						<div class="col-md-12 section20">
 							<a href="<?php echo base_url(); ?>companyProfile">
 								<div class="logo">
-									<i class="menu-icon fa fa-bank"></i>
+									<i class="menu-icon fa fa-cogs"></i>
 								</div>
 								<div class="textModule">
 									Company Profile
@@ -360,6 +375,7 @@ if ($module == 'dashboard' or $module == '') { ?>
 						</div>
 					</div>
 				<?php endif; ?>
+
 				<?php if (isset($CheckSuperAdmin)) : ?>
 					<div class="col-md-2 col-xs-6 custom-padding ">
 						<div class="col-md-12 section20">
@@ -431,7 +447,7 @@ if ($module == 'dashboard' or $module == '') { ?>
 						</div>
 					</div>
 				<?php endif; ?>
-				
+
 				<!-- <?php if (array_search("sales/service", $access) > -1 || isset($CheckSuperAdmin) || isset($CheckAdmin)) : ?>
 					<div class="col-md-2 col-xs-6 custom-padding ">
 						<div class="col-md-12 section20">
@@ -502,7 +518,7 @@ if ($module == 'dashboard' or $module == '') { ?>
 						</div>
 					</div>
 				<?php endif; ?>
-				
+
 				<?php if (array_search("currentStock", $access) > -1 || isset($CheckSuperAdmin) || isset($CheckAdmin)) : ?>
 					<div class="col-md-2 col-xs-6 custom-padding ">
 						<div class="col-md-12 section20">

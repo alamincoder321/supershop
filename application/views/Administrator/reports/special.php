@@ -222,7 +222,12 @@
 					})
 			},
 			getSaleReturn() {
-				axios.post('/get_sale_returns', this.filter)
+				let data = {
+					fromDate: this.filter.dateFrom,
+					toDate: this.filter.dateTo,
+					userFullName: this.filter.userFullName
+				}
+				axios.post('/get_sale_returns', data)
 					.then(res => {
 						this.saleReturns = res.data.returns;
 					})

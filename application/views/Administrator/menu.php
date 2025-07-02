@@ -325,10 +325,20 @@ if ($module == 'dashboard' or $module == '') {
 			</li>
 		<?php endif; ?>
 
+		<!-- <?php if ($this->session->userdata('BRANCHid') == 1 && (isset($CheckSuperAdmin) || isset($CheckAdmin))) : ?>
+			<li class="">
+				<a href="<?php echo base_url(); ?>branch">
+					<i class="menu-icon fa fa-bank"></i>
+					<span class="menu-text"> Branch Entry </span>
+				</a>
+				<b class="arrow"></b>
+			</li>
+		<?php endif; ?> -->
+		
 		<?php if ($this->session->userdata('BRANCHid') == 1 && (isset($CheckSuperAdmin) || isset($CheckAdmin))) : ?>
 			<li class="">
 				<a href="<?php echo base_url(); ?>companyProfile">
-					<i class="menu-icon fa fa-bank"></i>
+					<i class="menu-icon fa fa-cogs"></i>
 					<span class="menu-text"> Company Profile </span>
 				</a>
 				<b class="arrow"></b>
