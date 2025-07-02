@@ -989,7 +989,7 @@
 						this.sales.due = 0;
 					} else {
 						this.sales.returnAmount = 0;
-						this.sales.due = parseFloat(this.sales.paid).toFixed(2);
+						this.sales.due = parseFloat(this.sales.total - this.sales.paid).toFixed(2);
 					}
 				} else {
 					this.sales.cashPaid = this.sales.total;
