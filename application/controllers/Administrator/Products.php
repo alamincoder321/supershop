@@ -226,8 +226,12 @@ class Products extends CI_Controller
             $limit .= "limit 20";
         }
         if (isset($data->name) && $data->name != '') {
-            $clauses .= " and p.Product_Code like '$data->name%'";
-            $clauses .= " or p.Product_Name like '$data->name%'";
+            $search = $data->name;
+            $codeCheck = substr($data->name, 0, 2);
+            if ($codeCheck == 99) {
+                $search = substr($data->name, 2, 5);
+            }
+            $clauses .= " and (p.Product_Code like '%$search%' or p.Product_Name like '%$search%')";
         }
 
         $products = $this->db->query("
@@ -245,6 +249,15 @@ class Products extends CI_Controller
                                 $clauses
                                 order by p.Product_SlNo desc
                                 $limit")->result();
+
+        if ((isset($data->name) && $data->name != '') && count($products)) {
+            $quantity = 1;
+            $codeCheck = substr($data->name, 0, 2);
+            if ($codeCheck == 99) {
+                $quantity = substr($data->name, 7, 5) / 1000;
+            }
+            $products[0]->quantity = $quantity;
+        }
 
         echo json_encode($products);
     }

@@ -201,7 +201,7 @@
 								</div>
 								<label class="col-xs-1 control-label no-padding-right"> Qty </label>
 								<div class="col-xs-4">
-									<input type="number" step="0.01" id="quantity" placeholder="Qty" class="form-control" ref="quantity" v-model="selectedProduct.quantity" v-on:input="productTotal" autocomplete="off" required />
+									<input type="number" step="any" id="quantity" placeholder="Qty" class="form-control" ref="quantity" v-model="selectedProduct.quantity" v-on:input="productTotal" autocomplete="off" required />
 								</div>
 							</div>
 							<div class="form-group">
@@ -847,7 +847,7 @@
 							return;
 						}
 						this.selectedProduct = prod;
-						this.selectedProduct.quantity = 1;
+						this.selectedProduct.quantity = prod.quantity;
 						await this.productTotal();
 						await this.productOnChange();
 						if (parseFloat(this.productStock) < parseFloat(this.selectedProduct.quantity)) {
@@ -865,7 +865,7 @@
 							return;
 						}
 						this.selectedProduct = prod;
-						this.selectedProduct.quantity = 1;
+						this.selectedProduct.quantity = prod.quantity;
 						await this.productTotal();
 						await this.productOnChange();
 						if (parseFloat(this.productStock) < parseFloat(this.selectedProduct.quantity)) {
