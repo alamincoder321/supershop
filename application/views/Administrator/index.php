@@ -1,5 +1,9 @@
 <?php
 $companyInfo = $this->db->query("select * from tbl_company c order by c.Company_SlNo desc limit 1")->row();
+$CI =& get_instance();
+$CI->load->model('Sale_model');
+$sales_notify = $CI->Sale_model->uncheckSales(null,1);
+
 ?>
 
 <!DOCTYPE html>
@@ -81,6 +85,9 @@ $companyInfo = $this->db->query("select * from tbl_company c order by c.Company_
 			<div class="navbar-buttons navbar-header pull-right" role="navigation">
 				<ul class="nav ace-nav">
 					<?php
+			
+
+
 					$userID =  $this->session->userdata('userId');
 					$CheckSuperAdmin = $this->db
 						->where('User_SlNo', $userID)
@@ -93,7 +100,8 @@ $companyInfo = $this->db->query("select * from tbl_company c order by c.Company_
 					?>
 						<li class="light-blue dropdown-modal">
 							<a data-toggle="dropdown" href="#" class="dropdown-toggle">
-								<big>Branch Acess</big>
+								<big><?= $this->session->userdata('Brunch_name'); ?></big>
+								<?= $sales_notify;  ?>
 								<i class="ace-icon fa fa-caret-down"></i>
 							</a>
 
@@ -104,9 +112,10 @@ $companyInfo = $this->db->query("select * from tbl_company c order by c.Company_
 								$row = $sql->result();
 								foreach ($row as $row) { ?>
 									<li>
-										<a class="btn-add fancybox fancybox.ajax" href="<?php echo base_url(); ?>brachAccess/<?php echo $row->brunch_id; ?>">
+										<a class="btn-add fancybox fancybox.ajax" href="<?php echo base_url(); ?>brachAccess/<?php echo $row->brunch_id; ?>" style="<?= $this->session->userdata('BRANCHid') == $row->brunch_id ? 'background:#007ebb; color:white;' : ''; ?>">
 											<i class="ace-icon fa fa-bank"></i>
 											<?php echo $row->Brunch_name; ?>
+											<?= $CI->Sale_model->uncheckSales($row->brunch_id,1); ?>
 										</a>
 									</li>
 								<?php } ?>
@@ -250,6 +259,11 @@ $companyInfo = $this->db->query("select * from tbl_company c order by c.Company_
 	</script>
 	<script src="<?php echo base_url(); ?>assets/js/bootstrap.min.js"></script>
 
+		<!-- include summernote css/js -->
+		<link href="<?= base_url() ?>assets/summernote/summernote.min.css" rel="stylesheet">
+		<script src="<?= base_url() ?>assets/summernote/summernote.min.js"></script>
+
+
 	<!-- page specific plugin scripts -->
 	<script src="<?php echo base_url(); ?>assets/js/jquery.dataTables.min.js"></script>
 	<script src="<?php echo base_url(); ?>assets/js/jquery.dataTables.bootstrap.min.js"></script>
@@ -304,7 +318,11 @@ $companyInfo = $this->db->query("select * from tbl_company c order by c.Company_
 			document.getElementById("timer").innerHTML = currentTimeString;
 
 		}, 1000);
-	</script>
+
+		</script>
+		<script>
+    $('.summernote').summernote();
+</script>
 
 
 	<script type="text/javascript">

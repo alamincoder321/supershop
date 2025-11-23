@@ -210,4 +210,35 @@ class Sale_model extends CI_Model
 	}
 
 
+
+
+	public function uncheckSales($branch, $type, $status = 'p')
+	{
+		// var_dump($this->session->userdata());
+		// die();
+		 $this->db->from('tbl_salesmaster')
+             ->where('web_order', $type)
+             ->where('Status', $status);
+
+		if ($branch) {
+			$this->db->where('SaleMaster_branchid', $branch);
+		}else{
+			if($this->session->userdata('accountType') != 'm' && $this->session->userdata('accountType') != 'a'){
+				$this->db->where('SaleMaster_branchid', $this->session->userdata('BRANCHid'));
+			}
+		}
+
+		$count = $this->db->count_all_results();
+
+		if ($count > 0) {
+			return <<<HTML
+				<span class="badge badge-danger badge-counter info_pending_order" title="Pending Order">$count</span>
+			HTML;
+		} else {
+			return '';
+		}
+	}
+
+
+
 }

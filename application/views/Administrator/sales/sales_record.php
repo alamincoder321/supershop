@@ -111,7 +111,7 @@
 					<v-select v-bind:options="users" v-model="selectedUser" label="FullName"></v-select>
 				</div>
 
-				<div class="form-group" v-bind:style="{display: searchTypesForRecord.includes(searchType) ? '' : 'none'}">
+				<div class="form-group" v-bind:style="{display: searchTypesForRecord.includes(searchType) ? '' : 'none'}" @change="getSearchResult()">
 					<label>Record Type</label>
 					<select class="form-control" v-model="recordType" @change="sales = []">
 						<option value="without_details">Without Details</option>
@@ -119,12 +119,29 @@
 					</select>
 				</div>
 
+
+				<?php if(isset($_GET['type']) && $_GET['type'] == 'online') { ?>
+					<div class="form-group" >
+						<div class="d-flex flex-column">
+							<label >Show Record Type</label>
+							<select class="form-control" v-model="status" @change="getSearchResult()">
+								<option value="">All Order</option>
+								<option value="p">Pending order</option>
+								<option value="a">Confirmed order</option>
+								<option value="d">Delete order</option>
+								<option value="c">Cancel order</option>
+							</select>
+						</div>
+					</div>
+				<?php } ?>
+
+
 				<div class="form-group">
-					<input type="date" class="form-control" v-model="dateFrom">
+					<input type="date" class="form-control" v-model="dateFrom" @change="getSearchResult()">
 				</div>
 
 				<div class="form-group">
-					<input type="date" class="form-control" v-model="dateTo">
+					<input type="date" class="form-control" v-model="dateTo" @change="getSearchResult()">
 				</div>
 
 				<div class="form-group" style="margin-top: -5px;">
@@ -135,8 +152,18 @@
 	</div>
 
 	<div class="row" style="margin-top:15px;display:none;" v-bind:style="{display: sales.length > 0 ? '' : 'none'}">
-		<div class="col-md-12" style="margin-bottom: 10px;">
-			<a href="" @click.prevent="print"><i class="fa fa-print"></i> Print</a>
+		<div class="col-md-6">
+			<a href="" v-on:click.prevent="print">
+				<i class="fa fa-print"></i> Print
+			</a>
+		</div>
+		<div class="col-md-5 text-right">
+			<strong>Total Sale: </strong> <span v-text="sales.length"></span>
+		</div>
+		<div class="col-md-1 text-right">
+			<a href="" v-on:click.prevent="excelExport">
+				<i class="fa fa-file-excel-o"></i> Excel
+			</a>
 		</div>
 		<div class="col-md-12">
 			<div class="table-responsive" id="reportContent">
@@ -161,7 +188,13 @@
 					</thead>
 					<tbody>
 						<template v-for="sale in sales">
-							<tr>
+							<tr  :style="{
+									background: (sale.Status == 'p' && sale.web_order == '1')
+										? 'rgb(252 179 179)'
+										: (sale.Status == 'a' && sale.web_order == '1' && sale.delivery_status == 0)
+											? 'rgb(246 184 66)'
+											: ''
+								}">
 								<td>{{ sale.SaleMaster_InvoiceNo }}</td>
 								<td>{{ sale.SaleMaster_SaleDate }}</td>
 								<td>{{ sale.Customer_Name }}</td>
@@ -175,12 +208,34 @@
 									<a href="" title="Sale Invoice" v-bind:href="`/sale_invoice_print/${sale.SaleMaster_SlNo}`" target="_blank"><i class="fa fa-file"></i></a>
 									<a href="" title="Chalan" v-bind:href="`/chalan/${sale.SaleMaster_SlNo}`" target="_blank"><i class="fa fa-file-o"></i></a>
 									<?php if ($this->session->userdata('accountType') != 'u') { ?>
-										<a href="javascript:" title="Edit Sale" @click="checkReturnAndEdit(sale)"><i class="fa fa-edit"></i></a>
-										<a href="" title="Delete Sale" @click.prevent="deleteSale(sale.SaleMaster_SlNo)"><i class="fa fa-trash"></i></a>
+										
+										<a v-if="sale.Status != 'c' && sale.Status != 'd' && sale.web_order != 1" href="javascript:"
+											title="Edit Sale" @click="checkReturnAndEdit(sale)"><i
+												class="fa fa-edit"></i></a>
+										<a v-if="sale.Status != 'c' && sale.Status != 'd' && sale.web_order != 1" href="" title="Delete Sale"
+											@click.prevent="deleteSale(sale.SaleMaster_SlNo)"><i
+												class="fa fa-trash"></i></a>
+										&nbsp;
+										<span v-if="sale.web_order == 1" class="label"
+											:class="statusData(sale.Status).class">
+											{{ statusData(sale.Status).text }}
+										</span>
+
+										<div v-if="sale.web_order == 1">
+											<a href="" v-if="sale.Status == 'p'" title="Confirm Order" @click.prevent="OrderStatus(sale.SaleMaster_SlNo, 'a')">Confirm</a>
+											<a href="" v-if="sale.Status == 'p'" title="Cancel Order" @click.prevent="OrderStatus(sale.SaleMaster_SlNo, 'c')">Cancel</a>
+										</div>
+										<!-- 
+											<a href="javascript:" title="Edit Sale" @click="checkReturnAndEdit(sale)"><i
+													class="fa fa-edit"></i></a>
+											<a href="" title="Delete Sale" @click.prevent="deleteSale(sale.SaleMaster_SlNo)"><i
+												class="fa fa-trash"></i></a> -->
+
+												
 									<?php } ?>
 								</td>
 							</tr>
-							<tr v-for="(product, sl) in sale.saleDetails.slice(1)">
+							<tr v-for="(product, sl) in sale.saleDetails.slice(1)" :style="{background: (sale.Status == 'p' && sale.web_order == '1') ? 'rgb(252 179 179)' : ''}">
 								<td colspan="5" v-bind:rowspan="sale.saleDetails.length - 1" v-if="sl == 0"></td>
 								<td>{{ product.Product_Name }}</td>
 								<td style="text-align:right;">{{ product.SaleDetails_Rate }}</td>
@@ -218,14 +273,23 @@
 							<th>Discount</th>
 							<th>Point</th>
 							<th>Total</th>
-							<th>Paid</th>
+							<th>Cash</th>
+							<th>Bank</th>
 							<th>Return</th>
 							<th>Note</th>
 							<th>Action</th>
 						</tr>
 					</thead>
 					<tbody>
-						<tr v-for="sale in sales">
+					<tr v-for="sale in sales"
+						:style="{
+							background: (sale.Status == 'p' && sale.web_order == '1')
+								? 'rgb(252 179 179)'
+								: (sale.Status == 'a' && sale.web_order == '1' && sale.delivery_status == 0)
+									? 'rgb(246 184 66)'
+									: ''
+						}">
+
 							<td>{{ sale.SaleMaster_InvoiceNo }}</td>
 							<td>{{ sale.SaleMaster_SaleDate }}</td>
 							<td>{{ sale.Customer_Name }}</td>
@@ -235,32 +299,62 @@
 							<td style="text-align:right;">{{ sale.SaleMaster_TotalDiscountAmount }}</td>
 							<td style="text-align:right;">{{ sale.pointAmount }}</td>
 							<td style="text-align:right;">{{ sale.SaleMaster_TotalSaleAmount }}</td>
-							<td style="text-align:right;">{{ sale.SaleMaster_PaidAmount }}</td>
+							<td style="text-align:right;">{{ sale.SaleMaster_cashPaid }}</td>
+							<td style="text-align:right;">{{ sale.SaleMaster_bankPaid }}</td>
 							<td style="text-align:right;">{{ sale.returnAmount }}</td>
 							<td style="text-align:left;">{{ sale.SaleMaster_Description }}</td>
 							<td style="text-align:center;">
 								<a href="" title="Sale Invoice" v-bind:href="`/sale_invoice_print/${sale.SaleMaster_SlNo}`" target="_blank"><i class="fa fa-file"></i></a>
 								<a href="" title="Chalan" v-bind:href="`/chalan/${sale.SaleMaster_SlNo}`" target="_blank"><i class="fa fa-file-o"></i></a>
 								<?php if ($this->session->userdata('accountType') != 'u') { ?>
-									<a href="javascript:" title="Edit Sale" @click="checkReturnAndEdit(sale)"><i class="fa fa-edit"></i></a>
+									<!-- <a href="javascript:" title="Edit Sale" @click="checkReturnAndEdit(sale)"><i class="fa fa-edit"></i></a>
 									<a href="" title="Delete Sale" @click.prevent="deleteSale(sale.SaleMaster_SlNo)"><i class="fa fa-trash"></i></a>
+									&nbsp;
+									<div v-if="sale.web_order == 1">
+										<a href="" v-if="sale.Status == 'p'" title="Confirm Order" @click.prevent="OrderStatus(sale.SaleMaster_SlNo, 'a')">Confirm</a>
+									</div> -->
+
+
+								<a v-if="sale.Status != 'c' && sale.Status != 'd' && sale.web_order != 1" href="javascript:" title="Edit Sale" @click="checkReturnAndEdit(sale)"><i class="fa fa-edit"></i></a>
+								<a v-if="sale.Status != 'c' && sale.Status != 'd' && sale.web_order != 1" href="" title="Delete Sale" @click.prevent="deleteSale(sale.SaleMaster_SlNo)"><i class="fa fa-trash"></i></a>
+									&nbsp;
+									<span  v-if="sale.web_order == 1" class="label" :class="statusData(sale.Status).class">
+										{{ statusData(sale.Status).text }}
+									</span>
+									<div v-if="sale.web_order == 1">
+										<a href="" v-if="sale.Status == 'p'" title="Confirm Order" @click.prevent="OrderStatus(sale.SaleMaster_SlNo, 'a')">Confirm</a>
+										<a href="" v-if="sale.Status == 'p'" title="Cancel Order" @click.prevent="OrderStatus(sale.SaleMaster_SlNo, 'c')">Cancel</a>
+										<a href="" v-if="sale.Status == 'a' && sale.delivery_status == 0" title="Process Order" @click.prevent="OrderDelivery(sale.SaleMaster_SlNo, '1')">Delivered</a>
+
+									</div>
 								<?php } ?>
 							</td>
 						</tr>
-					</tbody>
-					<tfoot>
 						<tr style="font-weight:bold;">
 							<td colspan="5" style="text-align:right;">Total</td>
 							<td style="text-align:right;">{{ sales.reduce((prev, curr)=>{return prev + parseFloat(curr.SaleMaster_SubTotalAmount)}, 0).toFixed(2) }}</td>
 							<td style="text-align:right;">{{ sales.reduce((prev, curr)=>{return prev + parseFloat(curr.SaleMaster_TotalDiscountAmount)}, 0).toFixed(2) }}</td>
 							<td style="text-align:right;">{{ sales.reduce((prev, curr)=>{return prev + parseFloat(curr.pointAmount)}, 0).toFixed(2) }}</td>
 							<td style="text-align:right;">{{ sales.reduce((prev, curr)=>{return prev + parseFloat(curr.SaleMaster_TotalSaleAmount)}, 0).toFixed(2) }}</td>
-							<td style="text-align:right;">{{ sales.reduce((prev, curr)=>{return prev + parseFloat(curr.SaleMaster_PaidAmount)}, 0).toFixed(2) }}</td>
+							<td style="text-align:right;">{{ sales.reduce((prev, curr)=>{return prev + parseFloat(curr.SaleMaster_cashPaid)}, 0).toFixed(2) }}</td>
+							<td style="text-align:right;">{{ sales.reduce((prev, curr)=>{return prev + parseFloat(curr.SaleMaster_bankPaid)}, 0).toFixed(2) }}</td>
 							<td style="text-align:right;">{{ sales.reduce((prev, curr)=>{return prev + parseFloat(curr.returnAmount)}, 0).toFixed(2) }}</td>
 							<td></td>
 							<td></td>
 						</tr>
-					</tfoot>
+						<tr style="font-weight:bold;" v-if="sales.length > 0">
+							<td colspan="5"></td>
+							<td style="text-align:right;">SubTotal</td>
+							<td style="text-align:right;">Discount</td>
+							<td style="text-align:right;">Point</td>
+							<td style="text-align:right;">Total</td>
+							<td style="text-align:right;">Cash</td>
+							<td style="text-align:right;">Bank</td>
+							<td style="text-align:right;">Return</td>
+							<td></td>
+							<td></td>
+						</tr>
+					</tbody>
 				</table>
 
 				<template
@@ -279,7 +373,7 @@
 							</tr>
 						</thead>
 						<tbody>
-							<tr v-for="sale in sales">
+							<tr v-for="sale in sales"  :style="{background: (sale.Status == 'p' && sale.web_order == '1') ? 'rgb(252 179 179)' : ''}">
 								<td>{{ sale.SaleMaster_InvoiceNo }}</td>
 								<td>{{ sale.SaleMaster_SaleDate }}</td>
 								<td>{{ sale.Customer_Name }}</td>
@@ -305,7 +399,7 @@
 							</tr>
 						</thead>
 						<tbody>
-							<template v-for="sale in sales">
+							<template v-for="sale in sales" >
 								<tr>
 									<td colspan="3" style="text-align:center;background: #ccc;">{{ sale.category_name }}</td>
 								</tr>
@@ -328,6 +422,7 @@
 <script src="<?php echo base_url(); ?>assets/js/vue/vue-select.min.js"></script>
 <script src="<?php echo base_url(); ?>assets/js/moment.min.js"></script>
 <script src="<?php echo base_url(); ?>assets/js/lodash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <script>
 	Vue.component('v-select', VueSelect.VueSelect);
@@ -351,8 +446,19 @@
 				selectedCategory: null,
 				sales: [],
 				searchTypesForRecord: ['', 'user', 'customer', 'employee'],
-				searchTypesForDetails: ['quantity', 'category']
+				searchTypesForDetails: ['quantity', 'category'],
+				status: 'a'
 			}
+		},
+
+		created(){
+			<?php if(isset($_GET['type']) && $_GET['type'] == 'online') { ?>
+				this.dateFrom = '';
+				this.dateTo = '';
+				this.status = 'p';
+
+			<?php } ?>
+		   this.getSearchResult();   
 		},
 		methods: {
 			checkReturnAndEdit(sale) {
@@ -367,6 +473,19 @@
 						}
 					}
 				})
+			},
+			statusData(status) {
+				if (status === 'p') {
+					return { class: 'label-warning', text: 'Pending' };
+				} else if (status === 'a') {
+					return { class: 'label-success', text: 'Confirm' };
+				} else if (status === 'c') {
+					return { class: 'label-danger', text: 'Cancel' };
+				}else if (status === 'r') {
+					return { class: 'label-danger', text: 'Return' };
+				}else if (status === 'd') {
+					return { class: 'label-danger', text: 'Delete' };
+				}
 			},
 			onChangeSearchType() {
 				this.sales = [];
@@ -436,7 +555,10 @@
 					customerId: this.selectedCustomer == null || this.selectedCustomer.Customer_SlNo == '' ? '' : this.selectedCustomer.Customer_SlNo,
 					employeeId: this.selectedEmployee == null || this.selectedEmployee.Employee_SlNo == '' ? '' : this.selectedEmployee.Employee_SlNo,
 					dateFrom: this.dateFrom,
-					dateTo: this.dateTo
+					dateTo: this.dateTo,
+					type: '<?= isset($_GET['type']) ?  $_GET['type'] : '' ?>',
+					status: this.status
+
 				}
 
 				let url = '/get_sales';
@@ -519,6 +641,42 @@
 						}
 					})
 			},
+
+			OrderStatus(saleId, status) {
+				axios.post('/order_status', {
+					saleId: saleId,
+					status: status
+				}).then(res => {
+					let r = res.data;
+					alert(r.message);
+					if (r.success) {
+						this.getSalesRecord();
+					}
+				}).catch(error => {
+					if (error.response) {
+						alert(`${error.response.status}, ${error.response.statusText}`);
+					}
+				})
+			},
+			
+
+			OrderDelivery(saleId, status) {
+				axios.post('/order_delivery_status', {
+					saleId: saleId,
+					status: status
+				}).then(res => {
+					let r = res.data;
+					alert(r.message);
+					if (r.success) {
+						this.getSalesRecord();
+					}
+				}).catch(error => {
+					if (error.response) {
+						alert(`${error.response.status}, ${error.response.statusText}`);
+					}
+				})
+			},
+
 			async print() {
 				let dateText = '';
 				if (this.dateFrom != '' && this.dateTo != '') {
@@ -612,6 +770,31 @@
 				await new Promise(resolve => setTimeout(resolve, 1000));
 				reportWindow.print();
 				reportWindow.close();
+			},
+
+			excelExport() {
+				let onlyData = this.sales.map(item => {
+					return {
+						'Invoice No.': item.SaleMaster_InvoiceNo,
+						'Date': item.SaleMaster_SaleDate,
+						'Customer Name': item.Customer_Name,
+						'Employee Name': item.Employee_Name,
+						'Saved By': item.AddBy,
+						'SubTotal': item.SaleMaster_SubTotalAmount,
+						'Discount': item.SaleMaster_TotalDiscountAmount,
+						'Point': item.pointAmount,
+						'Total': item.SaleMaster_TotalSaleAmount,
+						'Paid': item.SaleMaster_PaidAmount,
+						'Return': item.returnAmount,
+						'Note': item.SaleMaster_Description
+					}
+				})
+
+				const worksheet = XLSX.utils.json_to_sheet(onlyData);
+				const workbook = XLSX.utils.book_new();
+				XLSX.utils.book_append_sheet(workbook, worksheet, "Skipped Rows");
+				// Excel download
+				XLSX.writeFile(workbook, "SaleRecord.xlsx");
 			}
 		}
 	})

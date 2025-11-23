@@ -67,6 +67,12 @@ $route['reorder_list']	=	'Administrator/Reports/reOrderList';
 $route['totalStock'] = 'Administrator/Products/total_stock';
 $route['totalStockPrint'] = 'Administrator/Reports/total_stock';
 
+$route['blog'] = 'Administrator/Blogs';
+$route['add_blog'] = 'Administrator/Blogs/addBlog';
+$route['update_blog'] = 'Administrator/Blogs/updateBlog';
+$route['delete_blog'] = 'Administrator/Blogs/deleteBlog';
+$route['get_blogs'] = 'Administrator/Blogs/getBlogs';
+
 
 // $route['GenerateBarcode/(:any)'] = 'BarcodeController/barcode_create/$1';
 $route['barcode/(:any)'] = 'BarcodeController/barcode_create/$1';
@@ -165,6 +171,8 @@ $route['sale_cheque_store'] = 'Administrator/Check/sale_cheque_store';
 $route['salesInvoicePrint'] = 'Administrator/Reports/sales_invoice';
 $route['add_sales'] = 'Administrator/Sales/addSales';
 $route['get_sales'] = 'Administrator/Sales/getSales';
+$route['order_status'] = 'Administrator/Sales/orderStatus';
+$route['order_delivery_status'] = 'Administrator/Sales/orderDeliveryStatus';
 $route['get_sales_record'] = 'Administrator/Sales/getSalesRecord';
 $route['get_saledetails'] = 'Administrator/Sales/getSaleDetails';
 $route['update_sales'] = 'Administrator/Sales/updateSales';
@@ -463,3 +471,20 @@ $route['get_exchanges'] = 'Administrator/Exchange/getExchanges';
 $route['add_exchange'] = 'Administrator/Exchange/addExchange';
 $route['delete_exchange'] = 'Administrator/Exchange/deleteExchange';
 $route['exchange_record'] = 'Administrator/Exchange/exchange_record';
+
+
+$route['update_customer_profile'] = 'Administrator/UpdateCustomer/updateCustomerProfile';
+
+
+
+$route['slider'] = 'Administrator/Slider';
+$route['update_or_create_slider'] = 'Administrator/Slider/updateSlider';
+$route['get_sliders'] = 'Administrator/Slider/getSliders';
+$route['delete_slider'] = 'Administrator/Slider/deleteSlider';
+
+
+$route['pages/(:any)/(:any)'] = 'Administrator/Slider/pages/$1/$2';
+$route['pages_store/(:any)/(:any)'] = 'Administrator/Slider/pagesStore/$1/$2';
+
+$route['feedback'] = 'Administrator/Feedback';
+$route['get_feedbacks'] = 'Administrator/Feedback/getFeedback';

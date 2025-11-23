@@ -1,3 +1,4 @@
+
 <div class="row">
 <div class="col-xs-12">
 	<!-- PAGE CONTENT BEGINS -->
@@ -14,6 +15,14 @@
 			</div>
 		</div>
 		
+		<div class="form-group">
+			<label class="col-sm-3 control-label no-padding-right" for="description">icon_class </label>
+			<label class="col-sm-1 control-label no-padding-right">:</label>
+			<div class="col-sm-3">
+				<input name="icon_class" id="icon_class" class="form-control" placeholder="Category Icon Class" >
+			</div>
+		</div>
+
 		<div class="form-group">
 			<label class="col-sm-3 control-label no-padding-right" for="description">Description </label>
 			<label class="col-sm-1 control-label no-padding-right">:</label>
@@ -64,6 +73,7 @@
 						</th>
 						<th>SL No</th>
 						<th>Category Name</th>
+						<th>Category Icon Class</th>
 						<th class="hidden-480">Description</th>
 
 						<th>Action</th>
@@ -73,7 +83,19 @@
 				<tbody>
 					<?php 
 					$BRANCHid=$this->session->userdata('BRANCHid');
-					$query = $this->db->query("SELECT * FROM tbl_productcategory where status='a' AND category_branchid = '$BRANCHid' order by ProductCategory_Name asc");
+					// $query = $this->db->query("SELECT * FROM tbl_productcategory where status='a'  order by ProductCategory_Name asc");
+					$query = $this->db->query("
+						SELECT 
+							c.*,
+							COUNT(p.Product_SlNo) AS total_items
+						FROM tbl_productcategory AS c
+						LEFT JOIN tbl_product AS p 
+							ON c.ProductCategory_SlNo = p.ProductCategory_ID
+						WHERE c.status = 'a'
+						GROUP BY c.ProductCategory_SlNo
+						ORDER BY c.ProductCategory_Name ASC
+					");
+					// $query = $this->db->query("SELECT * FROM tbl_productcategory where status='a' AND category_branchid = '$BRANCHid' order by ProductCategory_Name asc");
 					$row = $query->result();
 					//while($row as $row){ ?>
 					<?php $i=1; foreach($row as $row){ ?>
@@ -86,7 +108,8 @@
 						</td>
 
 						<td><?php echo $i++; ?></td>
-						<td><a href="#"><?php echo $row->ProductCategory_Name; ?></a></td>
+						<td><a href="#"><?php echo $row->ProductCategory_Name; ?>(<?php echo $row->total_items; ?>)</a></td>
+						<td><a href="#"><?php echo $row->icon_class; ?></a></td>
 						<td class="hidden-480"><?php echo $row->ProductCategory_Description; ?></td>
 						<td>
 						<div class="hidden-sm hidden-xs action-buttons">
@@ -119,12 +142,13 @@
     function submit(){
         var catname= $("#catname").val();
         var catdescrip= $("#catdescrip").val();
+		var icon_class= $("#icon_class").val();
         if(catname==""){
             $("#msg").html("Required Filed").css("color","red");
             return false;
         }
         var catname=encodeURIComponent(catname);
-        var inputdata = 'catname='+catname+'&catdescrip='+catdescrip;
+        var inputdata = 'catname='+catname+'&catdescrip='+catdescrip+'&icon_class='+icon_class;
         var urldata = "<?php echo base_url();?>insertcategory";
         $.ajax({
             type: "POST",

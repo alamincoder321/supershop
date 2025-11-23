@@ -49,9 +49,13 @@ class SMS_model extends CI_Model {
     }
 
     public function sendSms($recipient, $message) {
+        
+
         if($this->smsEnabled == 'false'){
             return false;
         }
+        
+
         $recipient = trim($recipient);
         $smsText = urldecode($message) . $this->getSmsFooter();
 
@@ -86,11 +90,16 @@ class SMS_model extends CI_Model {
     }
 
     public function sendBulkSms($recipients, $message) {
+        
+
         if($this->smsEnabled == 'false'){
             return false;
         }
-        $smsText = urldecode($message);
 
+        $smsText = urldecode($message);
+        
+
+        
         if($this->smsEnabled == 'gateway1'){
             $url = $this->bulkUrl;
 
@@ -109,7 +118,20 @@ class SMS_model extends CI_Model {
                 "messages" => json_encode($messages)
             );
 
-        }else{
+        }elseif($this->smsEnabled == 'mram'){
+              $url = $this->url;
+            $recipient = implode("+88",array_map('trim', $recipients));
+              $postData = [
+                "api_key" => $this->apiKey,
+                "type" =>  $this->smsType,
+                "contacts" =>  $recipient,
+                "senderid" =>  $this->senderId,
+                "msg" =>  $smsText,
+              ];
+              
+      
+              
+          }else{
             $url = $this->bulkUrl2;
             $recipient = implode(",",array_map('trim', $recipients));
 
@@ -126,10 +148,13 @@ class SMS_model extends CI_Model {
 
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_POST, true);
+         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         $result = curl_exec($ch);
-
+        
+  
         return $result;
     }
 }

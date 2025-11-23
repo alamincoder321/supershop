@@ -777,4 +777,5 @@ class Customer extends CI_Controller
         $this->load->view('Administrator/index', $data);
     }
 
+
 }

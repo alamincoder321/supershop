@@ -53,8 +53,10 @@ class Page extends CI_Controller
                 "ProductCategory_Name"              => $this->input->post('catname', TRUE),
                 "ProductCategory_Description"       => $this->input->post('catdescrip', TRUE),
                 "AddBy"                  => $this->session->userdata("FullName"),
+                'icon_class'                        => $this->input->post('icon_class', TRUE),
                 "AddTime"                           => date("Y-m-d H:i:s")
             );
+         
             $this->mt->save_data('tbl_productcategory', $data);
             $this->load->view('ajax/add_prodcategory');
         }
@@ -74,9 +76,11 @@ class Page extends CI_Controller
         $data = array(
             "ProductCategory_Name"              => $this->input->post('catname', TRUE),
             "ProductCategory_Description"       => $this->input->post('catdescrip', TRUE),
+            'icon_class'                        => $this->input->post('icon_class', TRUE),
             "UpdateBy"                          => $this->session->userdata("FullName"),
             "UpdateTime"                        => date("Y-m-d H:i:s")
         );
+
         $this->mt->update_data("tbl_productcategory", $data, $id, $fld);
         $this->load->view('ajax/add_prodcategory');
     }

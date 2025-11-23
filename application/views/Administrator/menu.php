@@ -1,4 +1,12 @@
 <?php
+$CI =& get_instance();
+$CI->load->model('Sale_model');
+$sales_notify = $CI->Sale_model->uncheckSales($this->session->userdata('BRANCHid'),1);
+
+
+
+
+
 $userID =  $this->session->userdata('userId');
 $CheckSuperAdmin = $this->db->where('UserType', 'm')->where('User_SlNo', $userID)->get('tbl_user')->row();
 
@@ -28,6 +36,7 @@ if ($module == 'dashboard' or $module == '') {
 			<a href="<?php echo base_url(); ?>module/SalesModule">
 				<i class="menu-icon fa fa-shopping-cart" style="font-size:23px;"></i>
 				<span class="menu-text"> Manage Sales </span>
+				<?= $sales_notify;  ?>
 			</a>
 			<b class="arrow"></b>
 		</li>
@@ -84,6 +93,16 @@ if ($module == 'dashboard' or $module == '') {
 			</a>
 			<b class="arrow"></b>
 		</li>
+
+		<li class="">
+			<a href="<?php echo base_url(); ?>feedback">
+				<i class="menu-icon fa fa-comments"></i>
+				<span class="menu-text"> Feedback </span>
+			</a>
+			<b class="arrow"></b>
+		</li>
+
+
 	</ul>
 <?php } elseif ($module == 'Administration') { ?>
 	<ul class="nav nav-list">
@@ -108,6 +127,57 @@ if ($module == 'dashboard' or $module == '') {
 				</a>
 				<b class="arrow"></b>
 			</li>
+			<li class="">
+				<a href="<?php echo base_url(); ?>blog">
+					<i class="menu-icon fa-solid fa-image"></i>
+					<span class="menu-text"> Blog </span>
+				</a>
+				<b class="arrow"></b>
+			</li>
+			<li class="">
+				<a href="<?php echo base_url(); ?>slider">
+					<i class="menu-icon fa-solid fa-image"></i>
+					<span class="menu-text"> Slider </span>
+				</a>
+				<b class="arrow"></b>
+			</li>
+			<li class="">
+				<a href="<?php echo base_url(); ?>pages/privacy_policy/Privacy%20Policy">
+					<i class="menu-icon fa-solid fa-image"></i>
+					<span class="menu-text"> Privacy Policy </span>
+				</a>
+				<b class="arrow"></b>
+			</li>
+			<li class="">
+				<a href="<?php echo base_url(); ?>pages/about_us/About Us">
+					<i class="menu-icon fa-solid fa-image"></i>
+					<span class="menu-text"> About Us </span>
+				</a>
+				<b class="arrow"></b>
+			</li>
+			<li class="">
+				<a href="<?php echo base_url(); ?>pages/terms_condition/Terms%20Conditions">
+					<i class="menu-icon fa-solid fa-image"></i>
+					<span class="menu-text"> Terms & Conditions </span>
+				</a>
+				<b class="arrow"></b>
+			</li>
+			<li class="">
+				<a href="<?php echo base_url(); ?>pages/return_refund/Return%20Refund">
+					<i class="menu-icon fa-solid fa-image"></i>
+					<span class="menu-text"> Return & Refund </span>
+				</a>
+				<b class="arrow"></b>
+			</li>
+			<li class="">
+				<a href="<?php echo base_url(); ?>pages/contact_us/Contact%20Us">
+					<i class="menu-icon fa-solid fa-image"></i>
+					<span class="menu-text"> Contact Us </span>
+				</a>
+				<b class="arrow"></b>
+			</li>
+
+
 		<?php endif; ?>
 
 		<?php if (
@@ -413,6 +483,14 @@ if ($module == 'dashboard' or $module == '') {
 		<?php endif; ?> -->
 
 		<?php if (array_search("salesrecord", $access) > -1 || isset($CheckSuperAdmin) || isset($CheckAdmin)) : ?>
+			<li class="">
+				<a href="<?php echo base_url(); ?>salesrecord?type=online">
+					<i class="menu-icon fa fa-list"></i>
+					<span class="menu-text">Online Sales Record </span>
+					<?= $sales_notify;  ?>
+				</a>
+				<b class="arrow"></b>
+			</li>
 			<li class="">
 				<a href="<?php echo base_url(); ?>salesrecord">
 					<i class="menu-icon fa fa-list"></i>

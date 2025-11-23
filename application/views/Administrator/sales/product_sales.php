@@ -201,7 +201,7 @@
 								</div>
 								<label class="col-xs-1 control-label no-padding-right"> Qty </label>
 								<div class="col-xs-4">
-									<input type="number" step="any" id="quantity" placeholder="Qty" class="form-control" ref="quantity" v-model="selectedProduct.quantity" v-on:input="productTotal" autocomplete="off" required />
+									<input type="number" step="0.01" id="quantity" placeholder="Qty" class="form-control" ref="quantity" v-model="selectedProduct.quantity" v-on:input="productTotal" autocomplete="off" required />
 								</div>
 							</div>
 							<div class="form-group">
@@ -772,7 +772,10 @@
 				}
 			},
 			productTotal() {
-				this.selectedProduct.total = (parseFloat(this.selectedProduct.quantity) * parseFloat(this.selectedProduct.Product_SellingPrice)).toFixed(2);
+				let qty = parseFloat(this.selectedProduct.quantity) || 0;
+				let rate = parseFloat(this.selectedProduct.Product_SellingPrice) || 0;
+
+				this.selectedProduct.total = ((qty * rate) - this.selectedProduct.discountAmount).toFixed(2);
 			},
 			onSalesTypeChange() {
 				if (this.selectedCustomer)
@@ -847,7 +850,7 @@
 							return;
 						}
 						this.selectedProduct = prod;
-						this.selectedProduct.quantity = prod.quantity;
+						this.selectedProduct.quantity = 1;
 						await this.productTotal();
 						await this.productOnChange();
 						if (parseFloat(this.productStock) < parseFloat(this.selectedProduct.quantity)) {
@@ -865,7 +868,7 @@
 							return;
 						}
 						this.selectedProduct = prod;
-						this.selectedProduct.quantity = prod.quantity;
+						this.selectedProduct.quantity = 1;
 						await this.productTotal();
 						await this.productOnChange();
 						if (parseFloat(this.productStock) < parseFloat(this.selectedProduct.quantity)) {
@@ -910,6 +913,8 @@
 					salesRate: this.selectedProduct.Product_SellingPrice,
 					vat: this.selectedProduct.vat,
 					quantity: this.selectedProduct.quantity,
+					discount: this.selectedProduct.discount,
+					discountAmount: this.selectedProduct.discountAmount,
 					total: this.selectedProduct.total,
 					purchaseRate: this.selectedProduct.Product_Purchase_Rate,
 					isFree: this.isFree
@@ -924,11 +929,6 @@
 					alert('Enter quantity');
 					return;
 				}
-
-				// if ((product.salesRate == 0 || product.salesRate == '') && !this.barcode) {
-				// 	alert('Enter sales rate');
-				// 	return;
-				// }
 
 				let cartInd = this.cart.findIndex(p => (p.productId == product.productId) && (p.isFree == product.isFree));
 				if (cartInd > -1) {
@@ -970,14 +970,23 @@
 			},
 			calculateTotal() {
 				this.sales.subTotal = this.cart.reduce((prev, curr) => {
-					return prev + parseFloat(curr.total)
+					return prev + parseFloat(curr.salesRate * curr.quantity)
 				}, 0).toFixed(2);
-				this.sales.vat = this.cart.reduce((prev, curr) => {
-					return +prev + +(curr.total * (curr.vat / 100))
-				}, 0);
+				if (event.target.id != 'transportCost') {
+					this.sales.vat = this.cart.reduce((prev, curr) => {
+						return +prev + +(curr.total * (curr.vat / 100))
+					}, 0);
+				}
+
 				if (event.target.id == 'discountPercent') {
 					this.sales.discount = ((parseFloat(this.sales.subTotal) * parseFloat(this.discountPercent)) / 100).toFixed(2);
+				} else if (event.target.id == 'discount') {
+					this.discountPercent = (parseFloat(this.sales.discount) / parseFloat(this.sales.subTotal) * 100).toFixed(2);
 				} else {
+					this.sales.discount = this.cart.reduce((prev, curr) => {
+						return +prev + +(curr.discountAmount)
+					}, 0);
+
 					this.discountPercent = (parseFloat(this.sales.discount) / parseFloat(this.sales.subTotal) * 100).toFixed(2);
 				}
 				this.sales.total = ((parseFloat(this.sales.subTotal) + parseFloat(this.sales.vat) + parseFloat(this.sales.transportCost)) - parseFloat(+this.sales.discount + +this.sales.pointAmount)).toFixed(2);
@@ -989,7 +998,7 @@
 						this.sales.due = 0;
 					} else {
 						this.sales.returnAmount = 0;
-						this.sales.due = parseFloat(this.sales.total - this.sales.paid).toFixed(2);
+						this.sales.due = parseFloat(this.sales.paid).toFixed(2);
 					}
 				} else {
 					this.sales.cashPaid = this.sales.total;
@@ -1020,9 +1029,9 @@
 					document.querySelector('#last_digit').select();
 				}
 			},
-			
-			goToAmount(){
-				if(this.selectedBank.last_digit.length > 3){
+
+			goToAmount() {
+				if (this.selectedBank.last_digit.length > 3) {
 					document.querySelector('#bankAmount').select();
 				}
 			},
@@ -1186,6 +1195,8 @@
 							total: product.SaleDetails_TotalAmount,
 							purchaseRate: product.Purchase_Rate,
 							isFree: product.isFree,
+							discount: product.SaleDetails_Discount,
+							discountAmount: product.Discount_amount,
 						}
 
 						this.cart.push(cartProduct);

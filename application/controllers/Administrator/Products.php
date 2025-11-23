@@ -82,7 +82,7 @@ class Products extends CI_Controller
 
             if (!empty($_FILES)) {
                 $config['upload_path'] = './uploads/products/';
-                $config['allowed_types'] = 'gif|jpg|png';
+                $config['allowed_types'] = '*';
 
                 $imageName = trim($product['Product_Code']);
                 $config['file_name'] = $imageName;
@@ -141,33 +141,97 @@ class Products extends CI_Controller
             $this->db->where('Product_SlNo', $productObj->Product_SlNo)->update('tbl_product', $product);
             $productId = $productObj->Product_SlNo;
 
-            if (!empty($_FILES)) {
-                $oldImage = $this->db->query("select image_name from tbl_product where Product_SlNo = ?", $productObj->Product_SlNo)->row()->image_name;
-                if (file_exists('./uploads/products/' . $oldImage)) {
-                    unlink('./uploads/products/' . $oldImage);
-                }
-                $config['upload_path'] = './uploads/products/';
-                $config['allowed_types'] = 'gif|jpg|png';
 
-                $imageName = trim($product['Product_Code']);
+    
+                $output_imges = [];
+                $output_images_string = '';
+
+                if (isset($_FILES['new_images']['name']) && !empty($_FILES['new_images']['name'][0])) {
+                    $filesCount = count($_FILES['new_images']['name']);
+
+                    for ($i = 0; $i < $filesCount; $i++) {
+                        // Remap one file at a time
+                        $_FILES['file']['name']     = $_FILES['new_images']['name'][$i];
+                        $_FILES['file']['type']     = $_FILES['new_images']['type'][$i];
+                        $_FILES['file']['tmp_name'] = $_FILES['new_images']['tmp_name'][$i];
+                        $_FILES['file']['error']    = $_FILES['new_images']['error'][$i];
+                        $_FILES['file']['size']     = $_FILES['new_images']['size'][$i];
+
+                        $config['upload_path']   = './uploads/products/';
+                        $config['allowed_types'] = '*';
+                        $file_size = round($_FILES['new_images']['size'][$i]);
+                        // $file_ext_array = explode('.', $_FILES['new_images']['name'][$i]);
+                        $config['file_name']     = $productObj->Product_Code .$file_size.time();//. end($file_ext_array);
+                        $config['overwrite']     = true;
+
+                        $this->load->library('upload', $config);
+                        $this->upload->initialize($config);
+
+                        if ($this->upload->do_upload('file')) {
+                            $uploadData   = $this->upload->data();
+                            $output_imges[] = $uploadData['file_name'];
+                        }
+                    }
+
+                    $output_images_string = implode(',', $output_imges);
+
+                    if($productObj->images != null && $productObj->images != ''){
+                        $output_images_string = $productObj->images.','.$output_images_string;
+                    }
+
+                    
+                    if(in_array($this->input->post('remove_image'),  $output_imges)){
+                        unlink('./uploads/products/' . $productObj->removeImages);
+                    }
+                    
+                }
+
+
+
+            if($output_images_string != ''){
+                $this->db->query("update tbl_product set images =  ? where Product_SlNo = ?", [$output_images_string, $productId]);
+            }
+
+            if (!empty($_FILES['image'])) {
+                $oldImage = $this->db->query("select image_name from tbl_product where Product_SlNo = ?", $productObj->Product_SlNo)->row()->image_name;
+                  
+                  
+                
+                $config['upload_path'] = './uploads/products/';
+                $config['allowed_types'] = '*';
+
+                $imageName = trim($product['Product_Code']).time();
                 $config['file_name'] = $imageName;
                 $this->load->library('upload', $config);
-                $this->upload->do_upload('image');
+              
+                if($this->upload->do_upload('image')){
 
-                $config['image_library'] = 'gd2';
-                $config['source_image'] = './uploads/products/' . $imageName;
-                $config['new_image'] = './uploads/products/';
-                $config['maintain_ratio'] = TRUE;
-                $config['width']    = 200;
-                $config['height']   = 200;
+                    $uploadData   = $this->upload->data();
+                    $imageName =  $uploadData['file_name'];
+                    $this->db->query("update tbl_product set image_name = ? where Product_SlNo = ?", [$imageName, $productId]);
 
-                $this->load->library('image_lib', $config);
-                $this->image_lib->resize();
+                    if (file_exists('./uploads/products/' . $oldImage) && $oldImage != null && $oldImage != '') {
+                        unlink('./uploads/products/' . $oldImage);
+                    }
 
-                $imageName = trim($product['Product_Code']) . $this->upload->data('file_ext');
+                }
 
-                $this->db->query("update tbl_product set image_name = ? where Product_SlNo = ?", [$imageName, $productId]);
+                // $config['image_library'] = 'gd2';
+                // $config['source_image'] = './uploads/products/' . $imageName;
+                // $config['new_image'] = './uploads/products/';
+                // $config['maintain_ratio'] = TRUE;
+                // $config['width']    = 200;
+                // $config['height']   = 200;
+
+                // $this->load->library('image_lib', $config);
+                // $this->image_lib->resize();
+
+                // $imageName =  $imageName . $this->upload->data('file_ext');
+
+                // $this->db->query("update tbl_product set image_name = ? where Product_SlNo = ?", [$imageName, $productId]);
             }
+
+            
 
 
             $res = ['success' => true, 'message' => 'Product updated successfully', 'productId' => $this->mt->generateProductCode()];
@@ -226,12 +290,8 @@ class Products extends CI_Controller
             $limit .= "limit 20";
         }
         if (isset($data->name) && $data->name != '') {
-            $search = $data->name;
-            $codeCheck = substr($data->name, 0, 2);
-            if ($codeCheck == 99) {
-                $search = substr($data->name, 2, 5);
-            }
-            $clauses .= " and (p.Product_Code like '%$search%' or p.Product_Name like '%$search%')";
+            $clauses .= " and p.Product_Code like '$data->name%'";
+            $clauses .= " or p.Product_Name like '$data->name%'";
         }
 
         $products = $this->db->query("
@@ -249,15 +309,6 @@ class Products extends CI_Controller
                                 $clauses
                                 order by p.Product_SlNo desc
                                 $limit")->result();
-
-        if ((isset($data->name) && $data->name != '') && count($products)) {
-            $quantity = 1;
-            $codeCheck = substr($data->name, 0, 2);
-            if ($codeCheck == 99) {
-                $quantity = substr($data->name, 7, 5) / 1000;
-            }
-            $products[0]->quantity = $quantity;
-        }
 
         echo json_encode($products);
     }

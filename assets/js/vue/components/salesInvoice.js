@@ -21,11 +21,7 @@ const salesInvoice = Vue.component('sales-invoice', {
                         {{ sales.Customer_Name }}<br>
                         {{ sales.Customer_Address }}<br>
                         {{ sales.Customer_Mobile }}<br>
-                        <span v-if="sales.customerPoint > 0"> 
-                            <strong>Previous Point:</strong> {{ sales.customerPoint - sales.point }}<br>
-                            <strong>Current Point:</strong> {{ sales.point }}<br>
-                            <strong>Total Point:</strong> {{ sales.customerPoint }}
-                        </span>
+                        <span v-if="sales.Project_Name"> <strong>Project:</strong> {{ sales.Project_Name }} </span>
                     </div>
                     <div class="col-xs-5 mobile-second-section">
                         <strong>SalesBy:</strong> {{ sales.AddBy }}<br>
@@ -71,17 +67,17 @@ const salesInvoice = Vue.component('sales-invoice', {
                 </div>
                 <div class="row">
                     <div class="col-xs-6 text-left">
-                        <div v-if="sales.SaleMaster_bankPaid > 0" style="margin:0; margin-top:10px; padding-bottom: 5px;">
+                        <div v-if="sales.SaleMaster_bankPaid > 0" style="margin:0; margin-top:10px; border-bottom: 1px solid gray; padding-bottom: 5px;">
                             <table _a584de>
                                 <tr>
                                     <td style="font-weight:700;">Sl</td>
                                     <td style="font-weight:700;">Bank Name</td>
                                     <td style="font-weight:700;">Amount</td>
                                 </tr>
-                                <tr v-for="(bank, sl) in banks">
-                                    <td>{{sl + 1}}</td>
-                                    <td>{{bank.bank_name}} - {{bank.account_number}}</td>
-                                    <td>{{bank.amount}}</td>
+                                <tr>
+                                    <td>1</td>
+                                    <td>{{sales.bank_name}} - {{sales.account_number}} - {{sales.account_name}}</td>
+                                    <td>{{sales.SaleMaster_bankPaid}}</td>
                                 </tr>
                             </table>
                         </div>
@@ -143,7 +139,6 @@ const salesInvoice = Vue.component('sales-invoice', {
                 AddBy: null
             },
             cart: [],
-            banks: [],
             style: null,
             companyProfile: null,
             currentBranch: null
@@ -163,7 +158,6 @@ const salesInvoice = Vue.component('sales-invoice', {
         getSales() {
             axios.post('/get_sales', { salesId: this.sales_id }).then(res => {
                 this.sales = res.data.sales[0];
-                this.banks = res.data.banks;
                 this.cart = res.data.saleDetails;
             })
         },

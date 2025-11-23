@@ -51,6 +51,23 @@
         background-color: #41add6;
         color: white;
     }
+
+
+    .multiple_select_items .dropdown-toggle,
+    .multiple_select_items {
+        height: auto;
+    }
+
+    .multiple_select_items  .vs__selected-options {
+        overflow: unset;
+        flex-wrap: wrap;
+    }
+
+    .multiple_select_items  span.selected-tag {
+        position: static;
+    }
+
+
 </style>
 <div id="branches">
     <form @submit.prevent="saveData">
@@ -224,7 +241,10 @@
                     alert("Please select a Area");
                     return;
                 }
+
+                // old code
                 this.branch.area_id = this.selectedDistrict.District_SlNo;
+
                 let url = '/add_branch';
                 if (this.branch.brunch_id != 0) {
                     url = '/update_branch';
@@ -235,6 +255,7 @@
                     if (r.success) {
                         alert(r.message);
                         this.resetForm();
+                        this.selectedDistrict  = null;
                         this.getBranches();
                     }
                 })
@@ -248,6 +269,7 @@
                     this.selectedDistrict = this.districts.find(d => d.District_SlNo == branch.area_id);
                 }, 1500);
             },
+
             resetForm() {
                 this.branch = {
                     brunch_id: 0,

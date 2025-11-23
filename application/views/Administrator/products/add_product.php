@@ -86,10 +86,30 @@
 	tr td {
 		vertical-align: middle !important;
 	}
+
+	.modal-header .close {
+		position: absolute;
+		top: 0;
+		right: 15px;
+	}
+
+	.product_img_remove {
+		position: absolute;
+		width: 10px;
+		height: 20px;
+		padding: 5px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 5px;
+		top: 7px;
+		right: 7px;
+	}
 </style>
 <div id="products">
 	<form @submit.prevent="saveProduct">
-		<div class="row" style="margin-top: 10px;margin-bottom:15px;border-bottom: 1px solid #ccc;padding-bottom: 15px;">
+		<div class="row"
+			style="margin-top: 10px;margin-bottom:15px;border-bottom: 1px solid #ccc;padding-bottom: 15px;">
 			<div class="col-md-5">
 				<div class="form-group clearfix">
 					<label class="control-label col-md-4">Product Id:</label>
@@ -102,18 +122,22 @@
 					<label class="control-label col-md-4">Category:</label>
 					<div class="col-md-7">
 						<select class="form-control" v-if="categories.length == 0"></select>
-						<v-select v-bind:options="categories" v-model="selectedCategory" label="ProductCategory_Name" v-if="categories.length > 0"></v-select>
+						<v-select v-bind:options="categories" v-model="selectedCategory" label="ProductCategory_Name"
+							v-if="categories.length > 0"></v-select>
 					</div>
-					<div class="col-md-1" style="padding:0;margin-left: -15px;"><a href="/category" target="_blank" class="add-button"><i class="fa fa-plus"></i></a></div>
+					<div class="col-md-1" style="padding:0;margin-left: -15px;"><a href="/category" target="_blank"
+							class="add-button"><i class="fa fa-plus"></i></a></div>
 				</div>
 
 				<div class="form-group clearfix" style="display:none;">
 					<label class="control-label col-md-4">Brand:</label>
 					<div class="col-md-7">
 						<select class="form-control" v-if="brands.length == 0"></select>
-						<v-select v-bind:options="brands" v-model="selectedBrand" label="brand_name" v-if="brands.length > 0"></v-select>
+						<v-select v-bind:options="brands" v-model="selectedBrand" label="brand_name"
+							v-if="brands.length > 0"></v-select>
 					</div>
-					<div class="col-md-1" style="padding:0;margin-left: -15px;"><a href="" class="add-button"><i class="fa fa-plus"></i></a></div>
+					<div class="col-md-1" style="padding:0;margin-left: -15px;"><a href="" class="add-button"><i
+								class="fa fa-plus"></i></a></div>
 				</div>
 
 				<div class="form-group clearfix">
@@ -127,17 +151,22 @@
 					<label class="control-label col-md-4">Unit:</label>
 					<div class="col-md-7">
 						<select class="form-control" v-if="units.length == 0"></select>
-						<v-select v-bind:options="units" v-model="selectedUnit" label="Unit_Name" v-if="units.length > 0"></v-select>
+						<v-select v-bind:options="units" v-model="selectedUnit" label="Unit_Name"
+							v-if="units.length > 0"></v-select>
 					</div>
-					<div class="col-md-1" style="padding:0;margin-left: -15px;"><a href="/unit" target="_blank" class="add-button"><i class="fa fa-plus"></i></a></div>
+					<div class="col-md-1" style="padding:0;margin-left: -15px;"><a href="/unit" target="_blank"
+							class="add-button"><i class="fa fa-plus"></i></a></div>
 				</div>
 			</div>
 
 			<div class="col-md-5">
+
 				<div class="form-group clearfix">
 					<label class="control-label col-md-4">Purchase Rate:</label>
 					<div class="col-md-7">
-						<input type="text" id="purchase_rate" class="form-control" v-model="product.Product_Purchase_Rate" required v-bind:disabled="product.is_service ? true : false">
+						<input type="text" id="purchase_rate" class="form-control"
+							v-model="product.Product_Purchase_Rate" required
+							v-bind:disabled="product.is_service ? true : false">
 					</div>
 				</div>
 
@@ -148,25 +177,18 @@
 					</div>
 				</div>
 				<div class="form-group clearfix">
+					<label class="control-label col-md-4">Discount Amount:</label>
+					<div class="col-md-7">
+						<input type="number" min="0" step="any" class="form-control" v-model="product.discountAmount" @input="calculateDiscount" required>
+					</div>
+				</div>
+				<div class="form-group clearfix">
 					<div class="col-md-11 text-right">
 						<input type="submit" class="btn btn-success btn-sm" value="Save">
 					</div>
 				</div>
 			</div>
-			<div class="col-md-2 text-center;">
-				<div class="form-group clearfix">
-					<div style="width: 100px;height:100px;border: 1px solid #ccc;overflow:hidden;">
-						<img id="customerImage" v-if="imageUrl == '' || imageUrl == null" src="/assets/no_image.gif">
-						<img id="customerImage" v-if="imageUrl != '' && imageUrl != null" v-bind:src="imageUrl">
-					</div>
-					<div style="text-align:center;">
-						<label class="custom-file-upload">
-							<input type="file" @change="previewImage" />
-							Select Image
-						</label>
-					</div>
-				</div>
-			</div>
+
 		</div>
 	</form>
 
@@ -185,7 +207,8 @@
 							<td>{{ row.sl }}</td>
 							<td>
 								<a :href="row.imageSrc">
-									<img :src="row.imageSrc" style="width: 45px; height: 45px; border: 1px solid gray; border-radius: 5px; padding: 1px;" />
+									<img :src="row.imageSrc"
+										style="width: 45px; height: 45px; border: 1px solid gray; border-radius: 5px; padding: 1px;" />
 								</a>
 							</td>
 							<td>{{ row.Product_Code }}</td>
@@ -193,9 +216,14 @@
 							<td>{{ row.ProductCategory_Name }}</td>
 							<td>{{ row.Product_Purchase_Rate }}</td>
 							<td>{{ row.Product_SellingPrice }}</td>
+							<td>{{ row.discountAmount }}</td>
 							<td>{{ row.Unit_Name }}</td>
 							<td>
 								<?php if ($this->session->userdata('accountType') != 'u') { ?>
+									<button type="button" class="button" @click="editProduct(row)" data-toggle="modal"
+										data-target="#staticBackdrop">
+										<i class="fa fa-info-circle"></i>
+									</button>
 									<button type="button" class="button edit" @click="editProduct(row)">
 										<i class="fa fa-pencil"></i>
 									</button>
@@ -203,7 +231,8 @@
 										<i class="fa fa-trash"></i>
 									</button>
 								<?php } ?>
-								<button type="button" class="button" @click="window.location = `/barcode/${row.Product_SlNo}`">
+								<button type="button" class="button"
+									@click="window.location = `/barcode/${row.Product_SlNo}`">
 									<i class="fa fa-barcode"></i>
 								</button>
 							</td>
@@ -214,6 +243,88 @@
 			</div>
 		</div>
 	</div>
+
+
+	<!-- Button trigger modal -->
+
+
+	<!-- Modal -->
+	<form class="modal fade" id="staticBackdrop" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true"
+		@submit.prevent="saveProduct">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="staticBackdropLabel">{{ product.Product_Name }}</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+
+
+					<div class="">
+						<div class="form-group clearfix">
+							<div style="width: 100px;height:100px;border: 1px solid #ccc;overflow:hidden;">
+								<img id="customerImage" v-if="imageUrl == '' || imageUrl == null" src="/assets/no_image.gif">
+								<img id="customerImage" v-if="imageUrl != '' && imageUrl != null" v-bind:src="imageUrl">
+							</div>
+							<div style="text-align:center;">
+								<label class="custom-file-upload">
+									<input type="file" @change="previewImage" />
+									Select Image
+								</label>
+							</div>
+						</div>
+					</div>
+
+					<div class="form-group clearfix">
+						<label class="control-label">Description</label>
+						<div class="">
+							<textarea class="form-control" v-model="product.Product_Description"></textarea>
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label">Note</label>
+						<div class="">
+							<textarea class="form-control" v-model="product.note"></textarea>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<div class="btn btn-default">
+							<label class="control-label" for="images">Select Images</label>
+							<input type="file" class="form-control" id="images" @change="multipleImage" multiple min="0" accept="image/*">
+						</div>
+						<div class="preview-images">
+							<div class="instant_preview">
+								<!-- <img v-if="imageUrl != '' && imageUrl != null" v-bind:src="imageUrl"> -->
+							</div>
+							<div v-if="product.images != '' && product.images != null">
+								<div v-for="(image, index) in product.images.split(',')" :key="index" style="position: relative; display: inline-block;">
+									<img
+										:key="index"
+										:src="`/uploads/products/${image.trim()}`"
+										style="width: 45px; height: 45px; border: 1px solid gray; border-radius: 5px; padding: 1px; margin: 5px;"
+										alt="Image" />
+
+									<button type="button" class="btn btn-danger btn-sm product_img_remove" @click="removeImagesF(index)">X</button>
+
+								</div>
+
+							</div>
+						</div>
+						<!-- instant preview -->
+
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+					<button type="submit" class="btn btn-primary">Update</button>
+				</div>
+			</div>
+		</div>
+	</form>
+
 
 
 </div>
@@ -242,12 +353,19 @@
 					Product_WholesaleRate: 0,
 					Unit_ID: '',
 					vat: 0,
+					discount: 0,
+					discountAmount: 0,
 					note: '',
-					is_service: false
+					is_service: false,
+					Product_Description: '',
+					images: '',
 				},
 				imageUrl: '',
 				selectedFile: null,
+				newMultipleImages: [],
+				removeImages: [],
 				products: [],
+
 				categories: [],
 				selectedCategory: null,
 				brands: [],
@@ -291,6 +409,11 @@
 						align: 'center'
 					},
 					{
+						label: 'Discount Amount',
+						field: 'discountAmount',
+						align: 'center'
+					},
+					{
 						label: 'Unit',
 						field: 'Unit_Name',
 						align: 'center'
@@ -313,6 +436,29 @@
 			this.getProducts();
 		},
 		methods: {
+			multipleImage(event) {
+				let numberOfImages = event.target.files.length;
+				let container = document.querySelector('.preview-images .instant_preview');
+				container.innerHTML = '';
+				// console.log(event.target.files);
+				this.newMultipleImages = event.target.files;
+				for (let index = 0; index < numberOfImages; index++) {
+					let reader = new FileReader();
+					reader.onload = (e) => {
+						let img = document.createElement('img');
+						img.setAttribute('src', e.target.result);
+						img.setAttribute('style', 'width: 45px; height: 45px; border: 1px solid gray; border-radius: 5px; padding: 1px; margin:2px;');
+						container.appendChild(img);
+					}
+					reader.readAsDataURL(event.target.files[index]);
+				}
+			},
+			removeImagesF(index) {
+				let imgArray = this.product.images.split(',');
+				this.removeImages.push(imgArray[index].trim());
+				imgArray.splice(index, 1);
+				this.product.images = imgArray.join(',');
+			},
 			changeIsService() {
 				if (this.product.is_service) {
 					this.product.Product_Purchase_Rate = 0;
@@ -342,6 +488,21 @@
 					});
 				})
 			},
+			calculateDiscount() {
+				if (
+					this.product.discountAmount &&
+					this.product.Product_SellingPrice &&
+					this.product.Product_Purchase_Rate
+				) {
+					if (parseFloat(this.product.discountAmount) > parseFloat(this.product.Product_SellingPrice - this.product.Product_Purchase_Rate)) {
+						this.product.discountAmount = parseFloat(this.product.Product_SellingPrice - this.product.Product_Purchase_Rate).toFixed(2);
+					}
+					let discountPercent = (parseFloat(this.product.discountAmount) / parseFloat(this.product.Product_SellingPrice)) * 100;
+					this.product.discount = discountPercent.toFixed(2);
+				} else {
+					this.product.discount = 0;
+				}
+			},
 			saveProduct() {
 				if (this.selectedCategory == null) {
 					alert('Select category');
@@ -361,6 +522,13 @@
 				let fd = new FormData();
 				fd.append('image', this.selectedFile);
 				fd.append('data', JSON.stringify(this.product));
+				Array.from(this.newMultipleImages).forEach((file, index) => {
+					fd.append('new_images[]', file); // [] is important for multiple
+				});
+
+				fd.append('removeImages', JSON.stringify(this.removeImages));
+
+				$('#staticBackdrop').modal('hide');
 
 				let url = '/add_product';
 				if (this.product.Product_SlNo != 0) {
@@ -387,6 +555,12 @@
 				keys.forEach(key => {
 					this.product[key] = product[key];
 				})
+				if (product.images) {
+					this.product.images = product.images;
+				} else {
+					this.product.images = '';
+				}
+
 
 				this.product.is_service = product.is_service == 'true' ? true : false;
 
@@ -433,6 +607,10 @@
 
 				this.imageUrl = '';
 				this.selectedFile = null;
+				this.removeImages = [];
+				this.newMultipleImages = [];
+				document.querySelector('.preview-images .instant_preview').innerHTML = '';
+
 			},
 			previewImage(event) {
 				const WIDTH = 200;

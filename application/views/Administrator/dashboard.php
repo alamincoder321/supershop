@@ -14,6 +14,15 @@
 </style>
 <?php
 
+$CI =& get_instance();
+$CI->load->model('Sale_model');
+$sales_notify = $CI->Sale_model->uncheckSales($this->session->userdata('BRANCHid'),1);
+
+
+
+
+
+
 $userID =  $this->session->userdata('userId');
 $CheckSuperAdmin = $this->db->where('UserType', 'm')->where('User_SlNo', $userID)->get('tbl_user')->row();
 
@@ -40,7 +49,8 @@ if ($module == 'dashboard' or $module == '') { ?>
 			<div class="col-md-10 col-md-offset-1" style="border-top: 1px solid gray;padding-top: 10px;">
 				<div class="col-md-3 col-xs-6 section4">
 					<div class="col-md-12 section122" style="background-color:#e1e1ff;" onmouseover="this.style.background = '#d2d2ff'" onmouseout="this.style.background = '#e1e1ff'">
-						<a href="<?php echo base_url(); ?>module/SalesModule">
+					<?= $sales_notify; ?>
+					<a href="<?php echo base_url(); ?>module/SalesModule">
 							<div class="logo">
 								<i class="fa fa-shopping-cart"></i>
 							</div>

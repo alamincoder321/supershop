@@ -141,6 +141,8 @@ class Sales extends CI_Controller
                     'Purchase_Rate'             => $cartProduct->purchaseRate,
                     'SaleDetails_Rate'          => $cartProduct->salesRate,
                     'SaleDetails_Tax'           => $cartProduct->vat,
+                    'SaleDetails_Discount'      => $cartProduct->discount,
+                    'Discount_amount'           => $cartProduct->discountAmount,
                     'SaleDetails_TotalAmount'   => $cartProduct->total,
                     'isFree'                    => $cartProduct->isFree,
                     'Status'                    => 'a',
@@ -175,15 +177,24 @@ class Sales extends CI_Controller
                 }
             }
 
-            // $currentDue = $data->sales->previousDue + ($data->sales->total - $data->sales->paid);
-            //Send sms
-            // $customerInfo = $this->db->query("select * from tbl_customer where Customer_SlNo = ?", $customerId)->row();
-            // $sendToName = $customerInfo->owner_name != '' ? $customerInfo->owner_name : $customerInfo->Customer_Name;
-            // $currency = $this->session->userdata('Currency_Name');
+             //Send sms
+            $currentDue = $data->sales->previousDue + ($data->sales->total - $data->sales->paid);
+            if($customerId =='' || $customerId == null){
+                $customerId = $data->sales->customerId;
+                $sendToName = $data->customer->Customer_Name;
+            }else{
+                $customerInfo = $this->db->query("select * from tbl_customer where Customer_SlNo = ?", $customerId)->row();
+                $sendToName = $customerInfo->owner_name != '' ? $customerInfo->owner_name : $customerInfo->Customer_Name;
+            }
 
-            // $message = "Dear {$sendToName},\nYour bill is {$currency} {$data->sales->total}. Received {$currency} {$data->sales->paid} and current due is {$currency} {$currentDue} for invoice {$invoice}";
-            // $recipient = $customerInfo->Customer_Mobile;
-            // $this->sms->sendSms($recipient, $message);
+            if($data->customer->Customer_Mobile != '' && $data->customer->Customer_Mobile != null){
+                $currency = $this->session->userdata('Currency_Name');
+                $message = "Dear {$sendToName},\nYour bill is {$currency} {$data->sales->total}. Received {$currency} {$data->sales->paid} and current due is {$currency} {$currentDue} for invoice {$invoice}";
+                $recipient = $customerInfo->Customer_Mobile;
+                $this->sms->sendBulkSms([$recipient], $message);
+            }
+
+
             $this->db->trans_commit();
 
             $res = ['success' => true, 'message' => 'Sales Success', 'salesId' => $salesId];
@@ -276,6 +287,11 @@ class Sales extends CI_Controller
             $clauses .= " and sm.SaleMaster_SlNo = '$data->saleId'";
         }
 
+        $status_clauses = "and sm.Status = 'a'";
+        if (isset($data->type) && $data->type == 'online') {
+            $status_clauses = "and sm.web_order =  '1'";
+        }
+
         $sales = $this->db->query("
             select 
                 sm.*,
@@ -294,7 +310,7 @@ class Sales extends CI_Controller
             left join tbl_employee e on e.Employee_SlNo = sm.employee_id
             left join tbl_brunch br on br.brunch_id = sm.SaleMaster_branchid
             where sm.SaleMaster_branchid = '$branchId'
-            and sm.Status = 'a'
+            $status_clauses
             $clauses
             order by sm.SaleMaster_SlNo desc
         ")->result();
@@ -394,6 +410,23 @@ class Sales extends CI_Controller
         }
 
 
+
+        // Modify if online
+        $status_clause = '';
+        if (isset($data->type) && $data->type == 'online') {
+            $status_clause = " and sm.web_order = 1";
+        } else {
+            if (isset($data->salesId) && $data->salesId != '0') {
+            } else {
+                $status_clause = " and sm.web_order = 0";
+            }
+        }
+
+        if (isset($data->status) && $data->status != '') {
+            $status_clause .= " and sm.Status = '$data->status'";
+        }
+
+
         $sales = $this->db->query("
             select 
             concat(sm.SaleMaster_InvoiceNo, ' - ', ifnull(c.Customer_Name, sm.customerName)) as invoice_text,
@@ -417,7 +450,7 @@ class Sales extends CI_Controller
             left join tbl_brunch br on br.brunch_id = sm.SaleMaster_branchid
             left join tbl_bank_accounts ba on ba.account_id = sm.bank_id
             where sm.SaleMaster_branchid = '$branchId'
-            and sm.Status = 'a'
+            $status_clause
             $clauses
             order by sm.SaleMaster_SlNo desc
             $limit
@@ -427,6 +460,92 @@ class Sales extends CI_Controller
 
         echo json_encode($res);
     }
+
+    public function orderStatus()
+    {
+        $res = ['success' => false, 'message' => ''];
+        // try {
+        $this->db->trans_begin();
+        $data = json_decode($this->input->raw_input_stream);
+        $salesId = $data->saleId;
+        $status = $data->status;
+
+        // $this->db->query("update tbl_salesmaster set Status = ? where SaleMaster_SlNo = ?", [$status, $salesId]);
+        if ($status == 'a') {
+            $sales_record = $this->db->query("select * from tbl_salesmaster where SaleMaster_SlNo = ?", [$salesId])->row();
+
+            $this->db->query("update tbl_salesmaster set Status = ?, SaleMaster_cashPaid = ?, SaleMaster_DueAmount = ? where SaleMaster_SlNo = ?", [$status, $sales_record->SaleMaster_cashPaid + $sales_record->SaleMaster_DueAmount, 0, $salesId]);
+            $sales_details = $this->db->query("select * from tbl_saledetails where SaleMaster_IDNo = ?", [$salesId])->result();
+            foreach ($sales_details as $key => $value) {
+
+                $this->db->query("update tbl_saledetails set status =  ? where SaleDetails_SlNo = ?", [$status, $value->SaleDetails_SlNo]);
+                // update inventory
+                $this->db->query("update tbl_currentinventory set sales_quantity = sales_quantity + ? where product_id = ?", [$value->SaleDetails_TotalQuantity, $value->Product_IDNo]);
+            }
+        } else {
+            $this->db->query("update tbl_salesmaster set Status = ? where SaleMaster_SlNo = ?", [$status, $salesId]);
+            $sales_details = $this->db->query("select * from tbl_saledetails where SaleMaster_IDNo = ?", [$salesId])->result();
+            foreach ($sales_details as $key => $value) {
+                $this->db->query("update tbl_saledetails set status =  ? where SaleDetails_SlNo = ?", [$status, $value->SaleDetails_SlNo]);
+                // update inventory
+                // $this->db->query("update tbl_currentinventory set sales_quantity = sales_quantity - ? where product_id = ?", [$value->SaleDetails_TotalQuantity, $value->Product_IDNo]);
+            }
+        }
+
+        // } catch (Exception $ex) {
+        //     $res = ['success' => false, 'message' => $ex->getMessage()];
+        // }
+
+        if ($this->db->trans_status() === FALSE) {
+            $this->db->trans_rollback();
+            $res = ['success' => false, 'message' => 'Something went wrong'];
+        } else {
+            $this->db->trans_commit();
+            $res = ['success' => true, 'message' => 'Status updated'];
+        }
+
+        echo json_encode($res);
+    }
+  public function orderDeliveryStatus()
+    {
+        // Decode JSON input
+        $data = json_decode($this->input->raw_input_stream);
+        if (empty($data) || !isset($data->saleId, $data->status)) {
+            echo json_encode(['success' => false, 'message' => 'Invalid data']);
+            return;
+        }
+
+        $salesId = $data->saleId;
+        $status = $data->status;
+
+        // Start transaction
+        $this->db->trans_begin();
+
+        try {
+            // Update delivery status
+            $this->db->query(
+                "UPDATE tbl_salesmaster 
+                SET delivery_status = ? 
+                WHERE SaleMaster_SlNo = ?",
+                [$status, $salesId]
+            );
+
+            // Complete transaction
+            if ($this->db->trans_status() === FALSE) {
+                $this->db->trans_rollback();
+                echo json_encode(['success' => false, 'message' => 'Failed to update order status']);
+            } else {
+                $this->db->trans_commit();
+                echo json_encode(['success' => true, 'message' => 'Order status updated']);
+            }
+        } catch (Exception $e) {
+            $this->db->trans_rollback();
+            echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+        }
+    }
+
+
+
 
     public function updateSales()
     {
@@ -538,6 +657,8 @@ class Sales extends CI_Controller
                     'Purchase_Rate'             => $cartProduct->purchaseRate,
                     'SaleDetails_Rate'          => $cartProduct->salesRate,
                     'SaleDetails_Tax'           => $cartProduct->vat,
+                    'SaleDetails_Discount'      => $cartProduct->discount,
+                    'Discount_amount'           => $cartProduct->discountAmount,
                     'SaleDetails_TotalAmount'   => $cartProduct->total,
                     'isFree'                    => $cartProduct->isFree,
                     'Status'                    => 'a',
@@ -1732,7 +1853,12 @@ class Sales extends CI_Controller
 
             $sale = $this->db->select('*')->where('SaleMaster_SlNo', $saleId)->get('tbl_salesmaster')->row();
             if ($sale->Status != 'a') {
-                $res = ['success' => false, 'message' => 'Sale not found'];
+                $this->db->update('tbl_salesmaster', ['Status' => 'd'], ['SaleMaster_SlNo' => $saleId]);
+                $sale_details = $this->db->select('*')->where('SaleMaster_IDNo', $saleId)->get('tbl_saledetails')->result();
+                foreach ($sale_details as $detail) {
+                    $this->db->update('tbl_saledetails', ['status' => 'd'], ['SaleDetails_SlNo' => $detail->SaleDetails_SlNo]);
+                }
+                $res = ['success' => false, 'message' => 'Uncomplete Sale Deleted Successfully'];
                 echo json_encode($res);
                 exit;
             }

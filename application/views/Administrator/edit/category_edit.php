@@ -1,3 +1,4 @@
+
 <div class="row">
 <div class="col-xs-12">
 	<!-- PAGE CONTENT BEGINS -->
@@ -9,6 +10,16 @@
 			<div class="col-sm-8">
 				<input type="text" id="catname" name="catname" placeholder="Category Name"  value="<?php echo $selected->ProductCategory_Name; ?>" class="col-xs-10 col-sm-4" />
 				<input name="id" id="id" type="hidden" value="<?php echo $selected->ProductCategory_SlNo; ?>"/>
+				<span id="msg"></span>
+				<span style="color:red;font-size:15px;">
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label class="col-sm-3 control-label no-padding-right" for="form-field-1"> Category Icon Class  </label>
+			<label class="col-sm-1 control-label no-padding-right">:</label>
+			<div class="col-sm-8">
+				<input type="text" id="icon_class" name="icon_class" placeholder="Category ICON CLASS"  value="<?php echo $selected->icon_class; ?>" class="col-xs-10 col-sm-4" />
 				<span id="msg"></span>
 				<span style="color:red;font-size:15px;">
 			</div>
@@ -63,6 +74,7 @@
 						</th>
 						<th>SL No</th>
 						<th>Category Name</th>
+						<th>Category Icon</th>
 						<th class="hidden-480">Description</th>
 
 						<th>Action</th>
@@ -86,6 +98,7 @@
 
 						<td><?php echo $i++; ?></td>
 						<td><a href="#"><?php echo $row->ProductCategory_Name; ?></a></td>
+						<td class="hidden-480"><?php echo $row->icon_class; ?></td>
 						<td class="hidden-480"><?php echo $row->ProductCategory_Description; ?></td>
 						<td>
 						<div class="hidden-sm hidden-xs action-buttons">
@@ -116,13 +129,14 @@
     function submit(){
         var catname= $("#catname").val();
         var catdescrip= $("#catdescrip").val();
+		var icon_class= $("#icon_class").val();
         var id= $("#id").val();
         if(catname==""){
             $("#msg").html("Required Filed").css("color","red");
             return false;
         }
         var catname=encodeURIComponent(catname);
-        var inputdata = 'catname='+catname+'&catdescrip='+catdescrip+'&id='+id;
+        var inputdata = 'catname='+catname+'&catdescrip='+catdescrip+'&id='+id+'&icon_class='+icon_class;
         var urldata = "<?php echo base_url();?>Administrator/page/catupdate";
         $.ajax({
             type: "POST",

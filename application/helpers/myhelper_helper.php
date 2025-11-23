@@ -220,13 +220,13 @@ function Extension($data) {
 function UploadPicture($nm, $org) {			
 	if(Extension($org) != "") {
 		$nm = $nm . "." . Extension($org);
-		copy($org['tmp_name'], $nm); 	
+	  	copy($org['tmp_name'], $nm); 	
 	}
 }
 
 function UpdatePicture($nm, $org, $prv) {
 	if(Extension($org) != "") {
-		if($prv != "") {
+		if($prv != "" || $prv != null) {
 			$tmp = $nm . "." . $prv;
 			unlink($tmp);	
 		}	
@@ -270,6 +270,20 @@ function Image1($data, $url, $width, $height)
 		echo "<img src='image/no_image.png' width='{$width}' height='{$height}' />";
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 function Numeric($data){
 	if(is_numeric($data)) {
@@ -578,5 +592,6 @@ function My_YearConverter($date){
 function My_YearConverter_Blog($date){
    return date_format(date_create($date),"M Y");
 }
+
 
 ?>

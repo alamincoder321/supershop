@@ -49,7 +49,8 @@ class SMS extends CI_Controller{
         $res = ['success'=>false, 'message'=>''];
         $data = json_decode($this->input->raw_input_stream);
 
-        $result = $this->sms->sendBulkSms($data->numbers, $data->smsText);
+         $result = $this->sms->sendBulkSms($data->numbers, $data->smsText);
+
 
         if(!$result){
             $res = ['success'=>false, 'message'=>'SMS not sent'];   
