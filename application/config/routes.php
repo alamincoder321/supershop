@@ -67,6 +67,13 @@ $route['reorder_list']	=	'Administrator/Reports/reOrderList';
 $route['totalStock'] = 'Administrator/Products/total_stock';
 $route['totalStockPrint'] = 'Administrator/Reports/total_stock';
 
+// campaign products
+$route['campaign_products'] = 'Administrator/Products/campaignProducts';
+$route['get_campaign_products'] = 'Administrator/Products/getCampaignProducts';
+$route['add_campaign_product'] = 'Administrator/Products/addCampaignProduct';
+$route['update_campaign_product'] = 'Administrator/Products/updateCampaignProduct';
+$route['delete_campaign_product'] = 'Administrator/Products/deleteCampaignProduct';
+
 $route['blog'] = 'Administrator/Blogs';
 $route['add_blog'] = 'Administrator/Blogs/addBlog';
 $route['update_blog'] = 'Administrator/Blogs/updateBlog';

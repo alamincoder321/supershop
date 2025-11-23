@@ -26,29 +26,6 @@ class Products extends CI_Controller
         $this->load->view('Administrator/index', $data);
     }
 
-    public function fanceybox_unit()
-    {
-        $this->load->view('Administrator/products/fanceybox_unit');
-    }
-    public function insert_unit()
-    {
-        $mail = $this->input->post('add_unit');
-        $query = $this->db->query("SELECT Unit_Name from tbl_unit where Unit_Name = '$mail'");
-
-        if ($query->num_rows() > 0) {
-            $data['exists'] = "This Name is Already Exists";
-            $this->load->view('Administrator/ajax/fanceybox_product_unit', $data);
-        } else {
-            $data = array(
-                "Unit_Name"          => $this->input->post('add_unit', TRUE),
-                "AddBy"                  => $this->session->userdata("FullName"),
-                "AddTime"                => date("Y-m-d H:i:s")
-            );
-            $this->mt->save_data('tbl_unit', $data);
-            $this->load->view('Administrator/ajax/fanceybox_product_unit');
-        }
-    }
-
     public function addProduct()
     {
         $res = ['success' => false, 'message' => ''];
@@ -142,69 +119,68 @@ class Products extends CI_Controller
             $productId = $productObj->Product_SlNo;
 
 
-    
-                $output_imges = [];
-                $output_images_string = '';
 
-                if (isset($_FILES['new_images']['name']) && !empty($_FILES['new_images']['name'][0])) {
-                    $filesCount = count($_FILES['new_images']['name']);
+            $output_imges = [];
+            $output_images_string = '';
 
-                    for ($i = 0; $i < $filesCount; $i++) {
-                        // Remap one file at a time
-                        $_FILES['file']['name']     = $_FILES['new_images']['name'][$i];
-                        $_FILES['file']['type']     = $_FILES['new_images']['type'][$i];
-                        $_FILES['file']['tmp_name'] = $_FILES['new_images']['tmp_name'][$i];
-                        $_FILES['file']['error']    = $_FILES['new_images']['error'][$i];
-                        $_FILES['file']['size']     = $_FILES['new_images']['size'][$i];
+            if (isset($_FILES['new_images']['name']) && !empty($_FILES['new_images']['name'][0])) {
+                $filesCount = count($_FILES['new_images']['name']);
 
-                        $config['upload_path']   = './uploads/products/';
-                        $config['allowed_types'] = '*';
-                        $file_size = round($_FILES['new_images']['size'][$i]);
-                        // $file_ext_array = explode('.', $_FILES['new_images']['name'][$i]);
-                        $config['file_name']     = $productObj->Product_Code .$file_size.time();//. end($file_ext_array);
-                        $config['overwrite']     = true;
+                for ($i = 0; $i < $filesCount; $i++) {
+                    // Remap one file at a time
+                    $_FILES['file']['name']     = $_FILES['new_images']['name'][$i];
+                    $_FILES['file']['type']     = $_FILES['new_images']['type'][$i];
+                    $_FILES['file']['tmp_name'] = $_FILES['new_images']['tmp_name'][$i];
+                    $_FILES['file']['error']    = $_FILES['new_images']['error'][$i];
+                    $_FILES['file']['size']     = $_FILES['new_images']['size'][$i];
 
-                        $this->load->library('upload', $config);
-                        $this->upload->initialize($config);
+                    $config['upload_path']   = './uploads/products/';
+                    $config['allowed_types'] = '*';
+                    $file_size = round($_FILES['new_images']['size'][$i]);
+                    // $file_ext_array = explode('.', $_FILES['new_images']['name'][$i]);
+                    $config['file_name']     = $productObj->Product_Code . $file_size . time(); //. end($file_ext_array);
+                    $config['overwrite']     = true;
 
-                        if ($this->upload->do_upload('file')) {
-                            $uploadData   = $this->upload->data();
-                            $output_imges[] = $uploadData['file_name'];
-                        }
+                    $this->load->library('upload', $config);
+                    $this->upload->initialize($config);
+
+                    if ($this->upload->do_upload('file')) {
+                        $uploadData   = $this->upload->data();
+                        $output_imges[] = $uploadData['file_name'];
                     }
+                }
 
-                    $output_images_string = implode(',', $output_imges);
+                $output_images_string = implode(',', $output_imges);
 
-                    if($productObj->images != null && $productObj->images != ''){
-                        $output_images_string = $productObj->images.','.$output_images_string;
-                    }
-
-                    
-                    if(in_array($this->input->post('remove_image'),  $output_imges)){
-                        unlink('./uploads/products/' . $productObj->removeImages);
-                    }
-                    
+                if ($productObj->images != null && $productObj->images != '') {
+                    $output_images_string = $productObj->images . ',' . $output_images_string;
                 }
 
 
+                if (in_array($this->input->post('remove_image'),  $output_imges)) {
+                    unlink('./uploads/products/' . $productObj->removeImages);
+                }
+            }
 
-            if($output_images_string != ''){
+
+
+            if ($output_images_string != '') {
                 $this->db->query("update tbl_product set images =  ? where Product_SlNo = ?", [$output_images_string, $productId]);
             }
 
             if (!empty($_FILES['image'])) {
                 $oldImage = $this->db->query("select image_name from tbl_product where Product_SlNo = ?", $productObj->Product_SlNo)->row()->image_name;
-                  
-                  
-                
+
+
+
                 $config['upload_path'] = './uploads/products/';
                 $config['allowed_types'] = '*';
 
-                $imageName = trim($product['Product_Code']).time();
+                $imageName = trim($product['Product_Code']) . time();
                 $config['file_name'] = $imageName;
                 $this->load->library('upload', $config);
-              
-                if($this->upload->do_upload('image')){
+
+                if ($this->upload->do_upload('image')) {
 
                     $uploadData   = $this->upload->data();
                     $imageName =  $uploadData['file_name'];
@@ -213,7 +189,6 @@ class Products extends CI_Controller
                     if (file_exists('./uploads/products/' . $oldImage) && $oldImage != null && $oldImage != '') {
                         unlink('./uploads/products/' . $oldImage);
                     }
-
                 }
 
                 // $config['image_library'] = 'gd2';
@@ -231,7 +206,7 @@ class Products extends CI_Controller
                 // $this->db->query("update tbl_product set image_name = ? where Product_SlNo = ?", [$imageName, $productId]);
             }
 
-            
+
 
 
             $res = ['success' => true, 'message' => 'Product updated successfully', 'productId' => $this->mt->generateProductCode()];
@@ -287,11 +262,10 @@ class Products extends CI_Controller
         }
 
         if (isset($data->forSearch) && $data->forSearch != '') {
-            $limit .= "limit 20";
+            $limit .= "limit 100";
         }
         if (isset($data->name) && $data->name != '') {
-            $clauses .= " and p.Product_Code like '$data->name%'";
-            $clauses .= " or p.Product_Name like '$data->name%'";
+            $clauses .= " and (p.Product_Code like '%$data->name%' or p.Product_Name like '%$data->name%')";
         }
 
         $products = $this->db->query("
@@ -310,7 +284,49 @@ class Products extends CI_Controller
                                 order by p.Product_SlNo desc
                                 $limit")->result();
 
-        echo json_encode($products);
+        foreach ($products as $product) {
+            $campaign = $this->db->query(
+                "select * from tbl_campaign where product_id = ? and branch_id = ?",
+                [$product->Product_SlNo, $this->brunch]
+            )->row();
+            $checkCampaign = $this->db->query(
+                "select * from tbl_campaign where product_id = ? and branch_id = ? and ? between dateFrom and dateTo",
+                [$product->Product_SlNo, $this->brunch, date('Y-m-d')]
+            )->row();
+            if (!empty($checkCampaign)) {
+                $product->name = $checkCampaign->name;
+                $product->dateFrom = $checkCampaign->dateFrom;
+                $product->dateTo = $checkCampaign->dateTo;
+                $product->range_quantity = $checkCampaign->range_quantity;
+            } else {
+                $product->name = '';
+                $product->dateFrom = '';
+                $product->dateTo = '';
+                $product->range_quantity = '';
+            }
+
+            if (!empty($campaign)) {
+                $product->campaignProducts = $this->db->query(
+                    "select op.*, p.Product_Name, p.Product_Code from tbl_campaign_product op
+                    left join tbl_product p on p.Product_SlNo = op.product_id
+                    where op.campaign_id = ? and op.branch_id = ?",
+                    [$campaign->id, $this->brunch]
+                )->result();
+            } else {
+                $product->campaignProducts = [];
+            }
+        }
+
+        if (isset($data->productType) && $data->productType == 'campaign') {
+            $products = array_filter($products, function ($product) {
+                return !empty($product->dateFrom)
+                    && !empty($product->dateTo)
+                    && $product->dateFrom <= date('Y-m-d')
+                    && $product->dateTo >= date('Y-m-d');
+            });
+        }
+
+        echo json_encode(array_values($products));
     }
 
     public function getProductStock()
@@ -682,5 +698,119 @@ class Products extends CI_Controller
         });
 
         echo json_encode(['ledger' => $ledger, 'previousStock' => $previousStock]);
+    }
+
+
+    public function campaignProducts()
+    {
+        $access = $this->mt->userAccess();
+        if (!$access) {
+            redirect(base_url());
+        }
+        $data['title'] = "Campaign Products";
+        $data['content'] = $this->load->view('Administrator/products/campaign', $data, TRUE);
+        $this->load->view('Administrator/index', $data);
+    }
+
+    public function getCampaignProducts()
+    {
+        $data = json_decode($this->input->raw_input_stream);
+
+        $clauses = "";
+        if (isset($data->campaignId) && $data->campaignId != null) {
+            $clauses .= " and cpm.id = '$data->campaignId'";
+        }
+
+        $products = $this->db->query("
+                                select
+                                    cmp.*,
+                                    p.Product_Code,
+                                    p.Product_Name
+                                from tbl_campaign cmp
+                                left join tbl_product p on p.Product_SlNo = cmp.product_id
+                                where cmp.branch_id = ?
+                                $clauses
+                                order by cmp.id desc", [$this->brunch])->result();
+
+        echo json_encode($products);
+    }
+
+    public function addCampaignProduct()
+    {
+        $res = ['success' => false, 'message' => ''];
+        try {
+            $data = json_decode($this->input->raw_input_stream);
+
+            $campaignProduct = [
+                'name' => $data->campaign->product_id,
+                'product_id' => $data->campaign->product_id,
+                'dateFrom' => $data->campaign->dateFrom,
+                'dateTo' => $data->campaign->dateTo,
+                'range_quantity' => $data->campaign->range_quantity,
+                'AddBy' => $this->session->userdata("FullName"),
+                'AddTime' => date('Y-m-d H:i:s'),
+                'branch_id' => $this->brunch
+            ];
+
+            $this->db->insert('tbl_campaign', $campaignProduct);
+
+            foreach ($data->cart as $item) {
+                $campaignProductDetail = [
+                    'campaign_id' => $this->db->insert_id(),
+                    'product_id' => $item->Product_SlNo,
+                    'campaign_quantity' => $item->quantity,
+                    'AddBy' => $this->session->userdata("FullName"),
+                    'AddTime' => date('Y-m-d H:i:s'),
+                    'branch_id' => $this->brunch
+                ];
+                $this->db->insert('tbl_campaign_product', $campaignProductDetail);
+            }
+
+            $res = ['success' => true, 'message' => 'Campaign product added successfully'];
+        } catch (Exception $ex) {
+            $res = ['success' => false, 'message' => $ex->getMessage()];
+        }
+
+        echo json_encode($res);
+    }
+
+    public function updateCampaignProduct()
+    {
+        $res = ['success' => false, 'message' => ''];
+        try {
+            $data = json_decode($this->input->raw_input_stream);
+
+            $campaignProduct = [
+                'name' => $data->campaign->name,
+                'product_id' => $data->campaign->product_id,
+                'dateFrom' => $data->campaign->dateFrom,
+                'dateTo' => $data->campaign->dateTo,
+                'range_quantity' => $data->campaign->range_quantity,
+                'UpdateBy' => $this->session->userdata("FullName"),
+                'UpdateTime' => date('Y-m-d H:i:s'),
+            ];
+
+            $this->db->where('id', $data->campaign->id)->update('tbl_campaign', $campaignProduct);
+
+            $this->db->where('campaign_id', $data->campaign->id)->delete('tbl_campaign_product');
+
+            foreach ($data->cart as $item) {
+                $campaignProductDetail = [
+                    'campaign_id' => $data->campaign->id,
+                    'product_id' => $item->Product_SlNo,
+                    'campaign_quantity' => $item->discount_type,
+                    'AddBy' => $this->session->userdata("FullName"),
+                    'AddTime' => date('Y-m-d H:i:s'),
+                    'branch_id' => $this->brunch
+                ];
+                $this->db->insert('tbl_campaign_product', $campaignProductDetail);
+            }
+
+            $res = ['success' => true, 'message' => 'Campaign product updated successfully'];
+        } catch (Exception $ex) {
+            $res = ['success' => false, 'message' => $ex->getMessage()];
+        }
+
+        echo json_encode($res);
     }
 }
