@@ -212,11 +212,7 @@
 							</div>
 
 							<div class="form-group">
-								<label class="col-xs-7 control-label" for="isFree" style="display: flex;align-items:center;cursor:pointer;">
-									<input type="checkbox" @change="onChangeFreeProduct" style="margin: 0px;width: 16px;height: 16px;cursor:pointer;" id="isFree" :true-value="`yes`" :false-value="`no`" v-model="isFree">
-									<span style="margin: 0px;margin-left: 5px;margin-top: 1px;">Is Free Product</span>
-								</label>
-								<div class="col-xs-5">
+								<div class="col-xs-12">
 									<button type="button" @click="addToCart" style="padding: 3px 6px; background: rgb(0, 126, 187) !important; border-color: rgb(0, 126, 187) !important; outline: none; border-radius: 6px;" class="btn pull-right">Add to Cart</button>
 								</div>
 							</div>
@@ -251,15 +247,37 @@
 						</tr>
 					</thead>
 					<tbody style="display:none;" v-bind:style="{display: cart.length > 0 ? '' : 'none'}">
-						<tr v-for="(product, sl) in cart" :style="{background: product.isFree == 'yes' ? '#ffd150b3' : ''}" :title="product.isFree == 'yes' ? 'Free Product' : ''">
-							<td>{{ sl + 1 }}</td>
-							<td>{{ product.name }} - {{ product.productCode }}</td>
-							<td>{{ product.categoryName }}</td>
-							<td>{{ product.quantity }}</td>
-							<td>{{ product.salesRate }}</td>
-							<td>{{ product.total }}</td>
-							<td><a href="" v-on:click.prevent="removeFromCart(sl)"><i class="fa fa-trash"></i></a></td>
-						</tr>
+						<template v-for="(product, sl) in cart">
+							<tr>
+								<td>{{ sl + 1 }}</td>
+								<td>{{ product.name }} - {{ product.productCode }}</td>
+								<td>{{ product.categoryName }}</td>
+								<td>{{ product.quantity }}</td>
+								<td>{{ product.salesRate }}</td>
+								<td>{{ product.total }}</td>
+								<td><a href="" v-on:click.prevent="removeFromCart(sl)"><i class="fa fa-trash"></i></a></td>
+							</tr>
+							<tr v-if="product.is_offer == 'yes' && product.campaignProducts.length > 0">
+								<td colspan="7" style="padding: 0; border: none;">
+									<table class="table table-striped table-bordered" style="margin-bottom:0;">
+										<thead>
+											<tr>
+												<th style="width:30px;">#</th>
+												<th>Product</th>
+												<th style="text-align:center;">Offer Quantity</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr v-for="(op, idx) in product.campaignProducts" :key="idx">
+												<td>{{ idx + 1 }}</td>
+												<td style="text-align: left;">{{ op.Product_Name }} - {{ op.Product_Code }}</td>
+												<td style="text-align:center;">{{ op.offer_quantity }}</td>
+											</tr>
+										</tbody>
+									</table>
+								</td>
+							</tr>
+						</template>
 
 						<tr>
 							<td colspan="7"></td>
@@ -574,8 +592,7 @@
 					Product_Purchase_Rate: '',
 					Product_SellingPrice: 0,
 					vat: 0,
-					total: 0,
-					warranty: '',
+					total: 0
 				},
 				productPurchaseRate: '',
 				productStockText: '',
@@ -868,6 +885,7 @@
 							return;
 						}
 						this.selectedProduct = prod;
+						
 						this.selectedProduct.quantity = 1;
 						await this.productTotal();
 						await this.productOnChange();
@@ -904,7 +922,7 @@
 					this.productTotal();
 				}
 			},
-			addToCart() {
+			async addToCart() {
 				let product = {
 					productId: this.selectedProduct.Product_SlNo,
 					productCode: this.selectedProduct.Product_Code,
@@ -917,9 +935,11 @@
 					discountAmount: this.selectedProduct.discountAmount,
 					total: this.selectedProduct.total,
 					purchaseRate: this.selectedProduct.Product_Purchase_Rate,
-					isFree: this.isFree
-				}
-
+					is_offer: this.selectedProduct.productType == 'offer' ? 'yes' : 'no',
+					range_quantity: this.selectedProduct.productType == 'offer' ? this.selectedProduct.range_quantity : 0,
+					campaignProducts: []
+				}			
+				
 				if (product.productId == '' && !this.barcode) {
 					alert('Select Product');
 					return;
@@ -930,16 +950,67 @@
 					return;
 				}
 
-				let cartInd = this.cart.findIndex(p => (p.productId == product.productId) && (p.isFree == product.isFree));
+				let cartInd = this.cart.findIndex(p => p.productId == product.productId);
 				if (cartInd > -1) {
 					let cartProduct = this.cart[cartInd];
 					product.quantity = parseFloat(+cartProduct.quantity + +product.quantity);
+
+					if (this.selectedProduct.productType == 'offer' && parseFloat(this.selectedProduct.range_quantity) <= parseFloat(product.quantity)) {
+						let campaignProducts = this.selectedProduct.campaignProducts.map(op => {
+							return {
+								...op,
+								offer_quantity: Math.floor(product.quantity / parseFloat(this.selectedProduct.range_quantity)) * op.offer_quantity
+							}
+						});						
+
+						for (let index = 0; index < campaignProducts.length; index++) {
+							const op = campaignProducts[index];
+							const opId = op.product_id;
+							const requiredQty = parseFloat(op.offer_quantity || 0);
+
+							if (opId && this.sales.isService == 'false') {
+								const opStock = await this.getProductStock(opId);
+								if (requiredQty > parseFloat(opStock)) {
+									alert(`Offer product "${op.Product_Name || op.Product_Code}" stock unavailable`);
+									return;
+								}
+							}
+						}
+
+						product.campaignProducts = campaignProducts;
+					}
 					product.total = parseFloat(+cartProduct.total + +product.total).toFixed(2);
+				}else{					
+					if (this.selectedProduct.productType == 'offer' && parseFloat(this.selectedProduct.range_quantity) <= parseFloat(product.quantity)) {
+                        let campaignProducts = this.selectedProduct.campaignProducts.map(op => {
+                            return {
+                                ...op,
+                                offer_quantity: Math.floor(product.quantity / parseFloat(product.range_quantity)) * op.offer_quantity
+                            }
+                        });
+
+                        for (let index = 0; index < campaignProducts.length; index++) {
+                            const op = campaignProducts[index];
+                            const opId = op.product_id;
+                            const requiredQty = parseFloat(op.offer_quantity || 0);
+
+                            if (opId && this.sales.isService == 'false') {
+                                const opStock = await this.getProductStock(opId);
+                                if (requiredQty > parseFloat(opStock)) {
+                                    alert(`Offer product "${op.Product_Name || op.Product_Code}" stock unavailable`);
+                                    return;
+                                }
+                            }
+                        }
+
+                        product.campaignProducts = campaignProducts;						
+                    }
 				}
 				if (parseFloat(this.productStock) < parseFloat(product.quantity)) {
 					alert("Stock unavailable");
 					return;
 				}
+				
 				if (cartInd > -1) {
 					this.cart.splice(cartInd, 1);
 				}
@@ -948,6 +1019,13 @@
 				this.clearProduct();
 				this.calculateTotal();
 			},
+			async getProductStock(productId) {
+                return await axios.post('/get_product_stock', {
+                    productId: productId
+                }).then(res => {
+                    return res.data;
+                })
+            },
 			removeFromCart(ind) {
 				this.cart.splice(ind, 1);
 				this.calculateTotal();

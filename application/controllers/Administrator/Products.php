@@ -298,11 +298,13 @@ class Products extends CI_Controller
                 $product->dateFrom = $checkCampaign->dateFrom;
                 $product->dateTo = $checkCampaign->dateTo;
                 $product->range_quantity = $checkCampaign->range_quantity;
+                $product->productType = 'offer';
             } else {
                 $product->name = '';
                 $product->dateFrom = '';
                 $product->dateTo = '';
                 $product->range_quantity = '';
+                $product->productType = '';
             }
 
             if (!empty($campaign)) {
@@ -317,7 +319,7 @@ class Products extends CI_Controller
             }
         }
 
-        if (isset($data->productType) && $data->productType == 'campaign') {
+        if (isset($data->productType) && $data->productType == 'offer') {
             $products = array_filter($products, function ($product) {
                 return !empty($product->dateFrom)
                     && !empty($product->dateTo)
@@ -732,6 +734,15 @@ class Products extends CI_Controller
                                 $clauses
                                 order by cmp.id desc", [$this->brunch])->result();
 
+        foreach ($products as $product) {
+            $product->campaignProducts = $this->db->query(
+                "select cp.*, p.Product_Name, p.Product_Code from tbl_campaign_product cp
+                left join tbl_product p on p.Product_SlNo = cp.product_id
+                where cp.campaign_id = ? and cp.branch_id = ?",
+                [$product->id, $this->brunch]
+            )->result();
+        }
+
         echo json_encode($products);
     }
 
@@ -758,7 +769,7 @@ class Products extends CI_Controller
                 $campaignProductDetail = [
                     'campaign_id' => $this->db->insert_id(),
                     'product_id' => $item->Product_SlNo,
-                    'campaign_quantity' => $item->quantity,
+                    'offer_quantity' => $item->quantity,
                     'AddBy' => $this->session->userdata("FullName"),
                     'AddTime' => date('Y-m-d H:i:s'),
                     'branch_id' => $this->brunch
@@ -798,15 +809,34 @@ class Products extends CI_Controller
                 $campaignProductDetail = [
                     'campaign_id' => $data->campaign->id,
                     'product_id' => $item->Product_SlNo,
-                    'campaign_quantity' => $item->discount_type,
+                    'offer_quantity' => $item->quantity,
                     'AddBy' => $this->session->userdata("FullName"),
                     'AddTime' => date('Y-m-d H:i:s'),
+                    'UpdateBy' => $this->session->userdata("FullName"),
+                    'UpdateTime' => date('Y-m-d H:i:s'),
                     'branch_id' => $this->brunch
                 ];
                 $this->db->insert('tbl_campaign_product', $campaignProductDetail);
             }
 
             $res = ['success' => true, 'message' => 'Campaign product updated successfully'];
+        } catch (Exception $ex) {
+            $res = ['success' => false, 'message' => $ex->getMessage()];
+        }
+
+        echo json_encode($res);
+    }
+
+    public function deleteCampaignProduct()
+    {
+        $res = ['success' => false, 'message' => ''];
+        try {
+            $data = json_decode($this->input->raw_input_stream);
+
+            $this->db->where('id', $data->campaignId)->delete('tbl_campaign');
+            $this->db->where('campaign_id', $data->campaignId)->delete('tbl_campaign_product');
+
+            $res = ['success' => true, 'message' => 'Campaign product deleted successfully'];
         } catch (Exception $ex) {
             $res = ['success' => false, 'message' => $ex->getMessage()];
         }

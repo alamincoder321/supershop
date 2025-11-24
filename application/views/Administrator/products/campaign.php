@@ -126,7 +126,7 @@
                         </tbody>
                         <tfoot>
                             <tr>
-                                <th colspan="4" style="text-align:right;"><button class="btn btn-xs btn-success" type="button" @click="addCampainProduct">Save Campaign</button></th>
+                                <th colspan="4" style="text-align:right;"><button class="btn btn-xs btn-success" type="button" @click="addCampainProduct"><span v-html="campaign.id != '' ? 'Update' : 'Save'"></span> Campaign</button></th>
                             </tr>
                         </tfoot>
                     </table>
@@ -155,10 +155,10 @@
                             <td>{{ row.range_quantity }}</td>
                             <td>
                                 <?php if ($this->session->userdata('accountType') != 'u') { ?>
-                                    <button type="button" class="button edit" @click="editProduct(row)">
+                                    <button type="button" class="button edit" @click="editCampaignProduct(row)">
                                         <i class="fa fa-pencil"></i>
                                     </button>
-                                    <button type="button" class="button" @click="deleteProduct(row.Product_SlNo)">
+                                    <button type="button" class="button" @click="deleteCampaignProduct(row.id)">
                                         <i class="fa fa-trash"></i>
                                     </button>
                                 <?php } ?>
@@ -409,6 +409,38 @@
                         }
                     })
             },
+
+            editCampaignProduct(campaign) {
+                this.campaign.id = campaign.id;
+                this.campaign.product_id = campaign.product_id;
+                this.campaign.name = campaign.name;
+                this.campaign.dateFrom = campaign.dateFrom;
+                this.campaign.dateTo = campaign.dateTo;
+                this.campaign.range_quantity = campaign.range_quantity;
+
+                this.selectedProduct = this.products.find(p => p.Product_SlNo === campaign.product_id);
+
+                this.cart = campaign.campaignProducts.map(item => ({
+                    Product_SlNo: item.product_id,
+                    Product_Name: item.Product_Name,
+                    Product_Code: item.Product_Code,
+                    quantity: parseFloat(item.offer_quantity)
+                }));
+            },
+
+            deleteCampaignProduct(id) {
+                if (confirm('Are you sure to delete this campaign product?')) {
+                    axios.post('/delete_campaign_product', {
+                            campaignId: id
+                        })
+                        .then(res => {
+                            if (res.data.success) {
+                                alert(res.data.message);
+                                this.getCampaignProducts();
+                            }
+                        })
+                }
+            }
         }
     })
 </script>

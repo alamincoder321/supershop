@@ -210,9 +210,19 @@ if ($module == 'dashboard' or $module == '') {
 						</li>
 					<?php endif; ?>
 
+					<?php if (array_search("campaign_products", $access) > -1 || isset($CheckSuperAdmin) || isset($CheckAdmin)) : ?>
+						<li class="">
+							<a href="<?php echo base_url(); ?>campaign_products">
+								<i class="menu-icon fa fa-caret-right"></i>
+								Campaign Products
+							</a>
+							<b class="arrow"></b>
+						</li>
+					<?php endif; ?>
+
 					<?php if (array_search("productlist", $access) > -1 || isset($CheckSuperAdmin) || isset($CheckAdmin)) : ?>
 						<li class="">
-							<a href="<?php echo base_url(); ?>productlist" target="_blank">
+							<a href="<?php echo base_url(); ?>productlist">
 								<i class="menu-icon fa fa-caret-right"></i>
 								Product List
 							</a>
