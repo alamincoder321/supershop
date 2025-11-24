@@ -144,7 +144,8 @@ class Sales extends CI_Controller
                     'SaleDetails_Discount'      => $cartProduct->discount,
                     'Discount_amount'           => $cartProduct->discountAmount,
                     'SaleDetails_TotalAmount'   => $cartProduct->total,
-                    'isFree'                    => $cartProduct->isFree,
+                    'is_offer'                  => $cartProduct->is_offer,
+                    'range_quantity'            => $cartProduct->range_quantity,
                     'Status'                    => 'a',
                     'AddBy'                     => $this->session->userdata("FullName"),
                     'AddTime'                   => date('Y-m-d H:i:s'),
@@ -152,7 +153,7 @@ class Sales extends CI_Controller
                 );
 
                 $this->db->insert('tbl_saledetails', $saleDetails);
-
+                $detailId = $this->db->insert_id();
                 //update stock
                 $this->db->query("
                     update tbl_currentinventory 
@@ -160,6 +161,36 @@ class Sales extends CI_Controller
                     where product_id = ?
                     and branch_id = ?
                 ", [$cartProduct->quantity, $cartProduct->productId, $this->session->userdata('BRANCHid')]);
+
+                if ($cartProduct->is_offer == 'yes' && count($cartProduct->campaignProducts) > 0) {
+                    foreach ($cartProduct->campaignProducts as $offerProduct) {
+                        $offerDetails = array(
+                            'SaleMaster_IDNo' => $salesId,
+                            'detail_id' => $detailId,
+                            'Product_IDNo' => $offerProduct->product_id,
+                            'SaleDetails_TotalQuantity' => $offerProduct->offer_quantity,
+                            'Purchase_Rate' => $cartProduct->purchaseRate,
+                            'SaleDetails_Rate' => 0,
+                            'SaleDetails_Tax' => 0,
+                            'Discount_amount' => 0,
+                            'SaleDetails_TotalAmount' => 0,
+                            'is_offer' => 'yes',
+                            'offer_quantity' => floor(($cartProduct->range_quantity * $offerProduct->offer_quantity) / $cartProduct->quantity),
+                            'Status' => 'a',
+                            'AddBy' => $this->session->userdata("FullName"),
+                            'AddTime' => date('Y-m-d H:i:s'),
+                            'SaleDetails_BranchId' => $this->session->userdata("BRANCHid")
+                        );
+
+                        $this->db->insert('tbl_saledetails', $offerDetails);
+                        $this->db->query("
+                            update tbl_currentinventory 
+                            set sales_quantity = sales_quantity + ? 
+                            where product_id = ?
+                            and branch_id = ?
+                        ", [$offerProduct->offer_quantity, $offerProduct->product_id, $this->session->userdata('BRANCHid')]);
+                    }
+                }
             }
 
             if (count($data->banks) > 0) {
@@ -177,17 +208,17 @@ class Sales extends CI_Controller
                 }
             }
 
-             //Send sms
+            //Send sms
             $currentDue = $data->sales->previousDue + ($data->sales->total - $data->sales->paid);
-            if($customerId =='' || $customerId == null){
+            if ($customerId == '' || $customerId == null) {
                 $customerId = $data->sales->customerId;
                 $sendToName = $data->customer->Customer_Name;
-            }else{
+            } else {
                 $customerInfo = $this->db->query("select * from tbl_customer where Customer_SlNo = ?", $customerId)->row();
                 $sendToName = $customerInfo->owner_name != '' ? $customerInfo->owner_name : $customerInfo->Customer_Name;
             }
 
-            if($data->customer->Customer_Mobile != '' && $data->customer->Customer_Mobile != null){
+            if ($data->customer->Customer_Mobile != '' && $data->customer->Customer_Mobile != null) {
                 $currency = $this->session->userdata('Currency_Name');
                 $message = "Dear {$sendToName},\nYour bill is {$currency} {$data->sales->total}. Received {$currency} {$data->sales->paid} and current due is {$currency} {$currentDue} for invoice {$invoice}";
                 $recipient = $customerInfo->Customer_Mobile;
@@ -506,7 +537,7 @@ class Sales extends CI_Controller
 
         echo json_encode($res);
     }
-  public function orderDeliveryStatus()
+    public function orderDeliveryStatus()
     {
         // Decode JSON input
         $data = json_decode($this->input->raw_input_stream);
@@ -660,7 +691,8 @@ class Sales extends CI_Controller
                     'SaleDetails_Discount'      => $cartProduct->discount,
                     'Discount_amount'           => $cartProduct->discountAmount,
                     'SaleDetails_TotalAmount'   => $cartProduct->total,
-                    'isFree'                    => $cartProduct->isFree,
+                    'is_offer'                  => $cartProduct->is_offer,
+                    'range_quantity'            => $cartProduct->range_quantity,
                     'Status'                    => 'a',
                     'AddBy'                     => $this->session->userdata("FullName"),
                     'AddTime'                   => date('Y-m-d H:i:s'),
@@ -675,6 +707,36 @@ class Sales extends CI_Controller
                     where product_id = ?
                     and branch_id = ?
                 ", [$cartProduct->quantity, $cartProduct->productId, $this->session->userdata('BRANCHid')]);
+
+                if ($cartProduct->is_offer == 'yes' && count($cartProduct->offerProducts) > 0) {
+                    foreach ($cartProduct->offerProducts as $offerProduct) {
+                        $offerDetails = array(
+                            'SaleMaster_IDNo' => $salesId,
+                            'detail_id' => $detailId,
+                            'Product_IDNo' => $offerProduct->product_id,
+                            'SaleDetails_TotalQuantity' => $offerProduct->offer_quantity,
+                            'Purchase_Rate' => $cartProduct->purchaseRate,
+                            'SaleDetails_Rate' => 0,
+                            'SaleDetails_Tax' => 0,
+                            'Discount_amount' => 0,
+                            'SaleDetails_TotalAmount' => 0,
+                            'is_offer' => 'yes',
+                            'offer_quantity' => floor(($cartProduct->range_quantity * $offerProduct->offer_quantity) / $cartProduct->quantity),
+                            'Status' => 'a',
+                            'AddBy' => $this->session->userdata("FullName"),
+                            'AddTime' => date('Y-m-d H:i:s'),
+                            'SaleDetails_BranchId' => $this->session->userdata("BRANCHid")
+                        );
+
+                        $this->db->insert('tbl_saledetails', $offerDetails);
+                        $this->db->query("
+                            update tbl_currentinventory 
+                            set sales_quantity = sales_quantity + ? 
+                            where product_id = ?
+                            and branch_id = ?
+                        ", [$offerProduct->offer_quantity, $offerProduct->product_id, $this->session->userdata('BRANCHid')]);
+                    }
+                }
             }
 
             //old bank list delete

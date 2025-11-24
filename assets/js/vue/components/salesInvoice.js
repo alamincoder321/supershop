@@ -48,19 +48,22 @@ const salesInvoice = Vue.component('sales-invoice', {
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="(product, sl) in cart">
-                                    <td>{{ sl + 1 }}</td>
-                                    <td style="text-align:left;" :style="{lineHeight: product.isFree == 'yes' ? '0.9' : ''}">
-                                        {{ product.Product_Name }} - {{product.Product_Code}}
-                                         <span v-if="product.isFree == 'yes'">
-                                            <br>
-                                            <i style="font-weight: 700;font-size: 10px;">Free</i>
-                                         </span>
-                                    </td>
-                                    <td>{{ product.SaleDetails_TotalQuantity }} {{ product.Unit_Name }}</td>
-                                    <td>{{ product.SaleDetails_Rate }}</td>
-                                    <td align="right">{{ product.SaleDetails_TotalAmount }}</td>
-                                </tr>
+                                <template v-for="(product, sl) in cart">
+                                    <tr>
+                                        <td>{{ sl + 1 }}</td>
+                                        <td style="text-align:left;">{{ product.Product_Name }} - {{product.Product_Code}}</td>
+                                        <td>{{ product.SaleDetails_TotalQuantity }} {{ product.Unit_Name }}</td>
+                                        <td>{{ product.SaleDetails_Rate }}</td>
+                                        <td align="right">{{ product.SaleDetails_TotalAmount }}</td>
+                                    </tr>
+                                    <tr v-if="product.is_offer == 'yes' && product.offerProducts.length > 0" v-for="(offerProduct, ind) in product.offerProducts">
+                                        <td style="border-right: none;writing-mode: sideways-lr;" :rowspan="product.offerProducts.length" v-if="ind == 0">Offer</td>
+                                        <td style="border-right: none;text-align:left;">{{ offerProduct.Product_Name }} - {{offerProduct.Product_Code}}</td>
+                                        <td style="border-right: none;">{{ offerProduct.SaleDetails_TotalQuantity }} {{ offerProduct.Unit_Name }}</td>
+                                        <td style="border-right: none;">{{ offerProduct.SaleDetails_Rate }}</td>
+                                        <td align="right">{{ offerProduct.SaleDetails_TotalAmount }}</td>
+                                    </tr>
+                                </template>
                             </tbody>
                         </table>
                     </div>
@@ -158,7 +161,14 @@ const salesInvoice = Vue.component('sales-invoice', {
         getSales() {
             axios.post('/get_sales', { salesId: this.sales_id }).then(res => {
                 this.sales = res.data.sales[0];
-                this.cart = res.data.saleDetails;
+                const details = res.data.saleDetails || [];
+
+                this.cart = details.filter(sd => sd.detail_id == null).map(sd => {
+                    return {
+                        ...sd,
+                        offerProducts: details.filter(op => op.detail_id == sd.SaleDetails_SlNo)
+                    }
+                });
             })
         },
         getCurrentBranch() {

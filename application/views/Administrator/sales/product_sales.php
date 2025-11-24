@@ -1261,7 +1261,8 @@
 						point: +sales.customerPoint + +sales.pointAmount
 					}
 
-					r.saleDetails.forEach(product => {
+					var details = r.saleDetails;
+					details.filter(p => p.detail_id == null).forEach(product => {
 						let cartProduct = {
 							productCode: product.Product_Code,
 							productId: product.Product_IDNo,
@@ -1272,16 +1273,25 @@
 							quantity: product.SaleDetails_TotalQuantity,
 							total: product.SaleDetails_TotalAmount,
 							purchaseRate: product.Purchase_Rate,
-							isFree: product.isFree,
 							discount: product.SaleDetails_Discount,
 							discountAmount: product.Discount_amount,
+							is_offer: product.is_offer,
+                            range_quantity: product.range_quantity,
+                            detail_id: product.detail_id,
+                            offerProducts: []
 						}
+
+						cartProduct.offerProducts = details.filter(op => op.detail_id == product.SaleDetails_SlNo).map(op => {
+                            return {
+                                product_id: op.Product_IDNo,
+                                Product_Name: op.Product_Name,
+                                Product_Code: op.Product_Code,
+                                offer_quantity: op.SaleDetails_TotalQuantity,
+                            }
+                        });
 
 						this.cart.push(cartProduct);
 					})
-
-					let gCustomerInd = this.customers.findIndex(c => c.Customer_Type == 'G');
-					this.customers.splice(gCustomerInd, 1);
 				})
 			}
 		}
