@@ -713,7 +713,7 @@
 					return;
 				}
 
-				if (this.selectedCustomer.Customer_SlNo != '') {
+				if (this.selectedCustomer.Customer_SlNo != '' && this.selectedCustomer.Customer_SlNo != null) {
 					if (this.sales.salesId != 0 && this.oldCustomerId != parseInt(this.selectedCustomer.Customer_SlNo)) {
 						let changeConfirm = confirm('Changing customer will set previous due to current due amount. Do you really want to change customer?');
 						if (changeConfirm == false) {
@@ -1278,17 +1278,17 @@
 							is_offer: product.is_offer,
                             range_quantity: product.range_quantity,
                             detail_id: product.detail_id,
-                            offerProducts: []
+                            campaignProducts: []
 						}
 
-						cartProduct.offerProducts = details.filter(op => op.detail_id == product.SaleDetails_SlNo).map(op => {
+						cartProduct.campaignProducts = details.filter(op => op.detail_id == product.SaleDetails_SlNo).map(op => {
                             return {
                                 product_id: op.Product_IDNo,
                                 Product_Name: op.Product_Name,
                                 Product_Code: op.Product_Code,
                                 offer_quantity: op.SaleDetails_TotalQuantity,
                             }
-                        });
+                        });						
 
 						this.cart.push(cartProduct);
 					})

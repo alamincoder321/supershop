@@ -210,16 +210,7 @@ if ($module == 'dashboard' or $module == '') {
 						</li>
 					<?php endif; ?>
 
-					<?php if (array_search("campaign_products", $access) > -1 || isset($CheckSuperAdmin) || isset($CheckAdmin)) : ?>
-						<li class="">
-							<a href="<?php echo base_url(); ?>campaign_products">
-								<i class="menu-icon fa fa-caret-right"></i>
-								Campaign Products
-							</a>
-							<b class="arrow"></b>
-						</li>
-					<?php endif; ?>
-
+					
 					<?php if (array_search("productlist", $access) > -1 || isset($CheckSuperAdmin) || isset($CheckAdmin)) : ?>
 						<li class="">
 							<a href="<?php echo base_url(); ?>productlist">
@@ -239,6 +230,26 @@ if ($module == 'dashboard' or $module == '') {
 							<b class="arrow"></b>
 						</li>
 					<?php endif; ?>
+						
+					<?php if (array_search("campaign_products", $access) > -1 || isset($CheckSuperAdmin) || isset($CheckAdmin)) : ?>
+						<li class="">
+							<a href="<?php echo base_url(); ?>campaign_products">
+								<i class="menu-icon fa fa-caret-right"></i>
+								Campaign Products
+							</a>
+							<b class="arrow"></b>
+						</li>
+					<?php endif; ?>
+
+					<?php if (array_search("campaignlist", $access) > -1 || isset($CheckSuperAdmin) || isset($CheckAdmin)) : ?>
+						<li class="">
+							<a href="<?php echo base_url(); ?>campaignlist">
+								<i class="menu-icon fa fa-caret-right"></i>
+								Campaign List
+							</a>
+							<b class="arrow"></b>
+						</li>
+					<?php endif; ?>					
 				</ul>
 			</li>
 		<?php endif; ?>

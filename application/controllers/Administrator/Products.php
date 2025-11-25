@@ -753,7 +753,7 @@ class Products extends CI_Controller
             $data = json_decode($this->input->raw_input_stream);
 
             $campaignProduct = [
-                'name' => $data->campaign->product_id,
+                'name' => $data->campaign->name,
                 'product_id' => $data->campaign->product_id,
                 'dateFrom' => $data->campaign->dateFrom,
                 'dateTo' => $data->campaign->dateTo,

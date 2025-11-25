@@ -482,6 +482,13 @@ class Reports extends CI_Controller {
         $this->load->view('Administrator/index', $data);
 	}
 	
+    public function campaignlist()
+	{
+		$data['title']  = 'Campaign Product List';
+        $data['content'] = $this->load->view('Administrator/reports/campaignList', $data, true);
+        $this->load->view('Administrator/index', $data);
+	}
+	
 	public function cashStatment() {
         $access = $this->mt->userAccess();
         if(!$access){

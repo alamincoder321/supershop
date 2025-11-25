@@ -164,7 +164,7 @@ class Sales extends CI_Controller
 
                 if ($cartProduct->is_offer == 'yes' && count($cartProduct->campaignProducts) > 0) {
                     foreach ($cartProduct->campaignProducts as $offerProduct) {
-                        $offerDetails = array(
+                        $campaignDetails = array(
                             'SaleMaster_IDNo' => $salesId,
                             'detail_id' => $detailId,
                             'Product_IDNo' => $offerProduct->product_id,
@@ -182,7 +182,7 @@ class Sales extends CI_Controller
                             'SaleDetails_BranchId' => $this->session->userdata("BRANCHid")
                         );
 
-                        $this->db->insert('tbl_saledetails', $offerDetails);
+                        $this->db->insert('tbl_saledetails', $campaignDetails);
                         $this->db->query("
                             update tbl_currentinventory 
                             set sales_quantity = sales_quantity + ? 
@@ -700,6 +700,7 @@ class Sales extends CI_Controller
                 );
 
                 $this->db->insert('tbl_saledetails', $saleDetails);
+                $detailId = $this->db->insert_id();
 
                 $this->db->query("
                     update tbl_currentinventory 
@@ -708,9 +709,9 @@ class Sales extends CI_Controller
                     and branch_id = ?
                 ", [$cartProduct->quantity, $cartProduct->productId, $this->session->userdata('BRANCHid')]);
 
-                if ($cartProduct->is_offer == 'yes' && count($cartProduct->offerProducts) > 0) {
-                    foreach ($cartProduct->offerProducts as $offerProduct) {
-                        $offerDetails = array(
+                if ($cartProduct->is_offer == 'yes' && count($cartProduct->campaignProducts) > 0) {
+                    foreach ($cartProduct->campaignProducts as $offerProduct) {
+                        $campaignDetails = array(
                             'SaleMaster_IDNo' => $salesId,
                             'detail_id' => $detailId,
                             'Product_IDNo' => $offerProduct->product_id,
@@ -728,7 +729,7 @@ class Sales extends CI_Controller
                             'SaleDetails_BranchId' => $this->session->userdata("BRANCHid")
                         );
 
-                        $this->db->insert('tbl_saledetails', $offerDetails);
+                        $this->db->insert('tbl_saledetails', $campaignDetails);
                         $this->db->query("
                             update tbl_currentinventory 
                             set sales_quantity = sales_quantity + ? 

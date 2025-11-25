@@ -55,6 +55,7 @@ $route['add_product'] = 'Administrator/Products/addProduct';
 $route['update_product'] = 'Administrator/Products/updateProduct';
 $route['delete_product'] = 'Administrator/Products/deleteProduct';
 $route['productlist'] = 'Administrator/Reports/productlist';
+$route['campaignlist'] = 'Administrator/Reports/campaignlist';
 $route['currentStock'] = 'Administrator/Products/current_stock';
 $route['get_products']	=	'Administrator/Products/getProducts';
 $route['get_product_stock']	=	'Administrator/Products/getProductStock';
